@@ -1,3 +1,4 @@
+
 export interface User {
   id: number;
   username: string;
@@ -46,6 +47,19 @@ export interface Stream {
   viewers: number;
 }
 
+export interface FeedPost {
+  id: number;
+  user: string;
+  avatar: string;
+  role: 'admin' | 'customer';
+  time: string;
+  content: string;
+  image?: string;
+  likes: number;
+  comments: number;
+  isLiked: boolean;
+}
+
 export interface CartItem extends Product {
   quantity: number;
 }
@@ -59,5 +73,5 @@ export interface CheckoutData {
   notes: string;
 }
 
-export type View = 'home' | 'detail' | 'cart' | 'admin' | 'feed' | 'promo' | 'akun' | 'login' | 'register';
+export type View = 'home' | 'detail' | 'cart' | 'admin' | 'feed' | 'promo' | 'akun' | 'login' | 'register' | 'live';
 export type AdminView = 'dashboard' | 'products' | 'categories' | 'promos' | 'streams';
