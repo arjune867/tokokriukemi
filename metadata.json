@@ -1,5 +1,5 @@
 {
   "name": "Toko Kriuké",
-  "description": "An e-commerce application for Toko Kriuké, featuring local products like banana chips, snacks, custom t-shirts, and perfumes. Includes a full-featured admin panel and WhatsApp checkout functionality.",
+  "description": "Aplikasi e-commerce untuk Toko Kriuké, menampilkan produk lokal seperti keripik pisang, camilan, kaos sablon DTF, dan parfum. Dilengkapi dengan panel admin lengkap dan fitur checkout via WhatsApp.",
   "requestFramePermissions": []
 }

@@ -74,7 +74,7 @@ const App: React.FC = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [shareToFeed, setShareToFeed] = useState(true);
 
-  // Auth state - Updated with Points, Verification, Blocked status
+  // Auth state
   const [users, setUsers] = useState<UserType[]>([
     { id: 1, username: 'arjune', password: 'masukin474', role: 'admin', name: 'Arjune', email: 'admin@kriuke.com', whatsapp: '081234567890', address: 'Jl. Admin No. 1, Bandung', points: 9999, isVerified: true, isBlocked: false },
     { id: 2, username: 'pelanggan', password: 'password123', role: 'customer', name: 'Pelanggan Setia', email: 'pelanggan@email.com', whatsapp: '089876543210', address: 'Jl. Pelanggan No. 10, Cimahi', points: 50, isVerified: false, isBlocked: false },
@@ -127,7 +127,7 @@ const App: React.FC = () => {
       role: "admin",
       time: "30 menit yang lalu",
       content: "🔥 FLASH SALE ALERT! 🔥\nJangan lewatkan diskon hingga 25% untuk varian Keripik Pisang Coklat hari ini saja. Stok terbatas ya kak!",
-      videoUrl: "https://www.youtube.com/watch?v=S5i3Jqj7C6s", // Dummy YouTube link
+      videoUrl: "https://www.youtube.com/watch?v=S5i3Jqj7C6s", 
       likes: 124,
       comments: 2,
       isLiked: false,
@@ -144,7 +144,7 @@ const App: React.FC = () => {
       role: "customer",
       time: "2 jam yang lalu",
       content: "Unboxing paket dari Kriuké! Packing aman banget, bubble wrap tebel. Suka banget sama parfumnya 😍",
-      videoUrl: "https://www.tiktok.com/@tiktok/video/7106892042372500782", // Dummy TikTok Link
+      videoUrl: "https://www.tiktok.com/@tiktok/video/7106892042372500782",
       likes: 45,
       comments: 1,
       isLiked: true,
@@ -184,7 +184,7 @@ const App: React.FC = () => {
     }
   ]);
 
-  // Products with Dummy Reviews
+  // Products
   const [products, setProducts] = useState<Product[]>([
     { 
       id: 1, name: "Keripik Pisang Coklat", price: 15000, originalPrice: 20000, discount: 25, rating: 4.9, sold: 2450, location: "Bandung", freeShipping: true, image: "https://placehold.co/300x300/F0FDF4/047857?text=🍫+Coklat", description: "Keripik pisang premium dilumuri coklat dark berkualitas. Renyah dan bikin nagih!", category: "keripik",
@@ -203,7 +203,6 @@ const App: React.FC = () => {
     { id: 13, name: "Kaos DTF - Tung Tung Sahur", price: 85000, originalPrice: 115000, discount: 26, rating: 4.8, sold: 85, location: "Bandung", freeShipping: true, image: "https://placehold.co/300x300/f59e0b/ffffff?text=Sahur", description: "Kaos edisi spesial Ramadhan dengan desain 'Tung Tung Sahur' yang jenaka. Bahan adem.", category: "kaos", reviews: [] },
     { id: 14, name: "Kaos DTF - Custom Kata", price: 95000, originalPrice: 130000, discount: 27, rating: 5.0, sold: 210, location: "Bandung", freeShipping: true, image: "https://placehold.co/300x300/ffffff/000000?text=Custom", description: "Bebas ekspresikan dirimu! Request kata-kata atau quote favoritmu untuk disablon.", category: "kaos", reviews: [] },
     { id: 15, name: "Kaos DTF - Logo Kriuké", price: 75000, originalPrice: 100000, discount: 25, rating: 4.7, sold: 340, location: "Bandung", freeShipping: true, image: "https://placehold.co/300x300/10b981/ffffff?text=Kriuké", description: "Kaos merchandise official Kriuké dengan logo minimalis di dada kiri. Simpel dan keren.", category: "kaos", reviews: [] },
-    
     { id: 4, name: "Parfum HRM - Mistique", price: 95000, originalPrice: 135000, discount: 30, rating: 4.8, sold: 840, location: "Bandung", freeShipping: true, image: "https://placehold.co/300x300/F0FDF4/16A34A?text=💧+Mistique", description: "Parfum HRM Mistique – aroma woody & musky yang elegan. Tahan 8-12 jam. 50ml.", category: "parfum", reviews: [] },
     { id: 5, name: "Keripik Talas Original", price: 12000, originalPrice: 15000, discount: 20, rating: 4.6, sold: 1450, location: "Bandung", freeShipping: false, image: "https://placehold.co/300x300/F0FDF4/065F46?text=🍠+Talas", description: "Keripik talas lokal khas Jawa Barat. Renyah, gurih, dan rendah lemak.", category: "snack", reviews: [] },
     { id: 6, name: "Parfum HRM - Citrus Bloom", price: 95000, originalPrice: 135000, discount: 30, rating: 4.7, sold: 710, location: "Bandung", freeShipping: true, image: "https://placehold.co/300x300/F0FDF4/15803D?text=🍊+Citrus", description: "Aroma citrus segar dengan sentuhan floral. Ringan & menyegarkan. 50ml.", category: "parfum", reviews: [] },
@@ -258,11 +257,6 @@ const App: React.FC = () => {
     { name: 'Senin', sales: 1200 }, { name: 'Selasa', sales: 950 }, { name: 'Rabu', sales: 1420 },
     { name: 'Kamis', sales: 1680 }, { name: 'Jumat', sales: 2150 }, { name: 'Sabtu', sales: 2840 }, { name: 'Minggu', sales: 3210 }
   ];
-  const categoryData = [
-    { name: 'Keripik', value: 45 }, { name: 'Snack', value: 25 },
-    { name: 'Kaos DTF', value: 15 }, { name: 'Parfum HRM', value: 15 }
-  ];
-  const COLORS = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0'];
 
   // ... (Timer logic)
   const [timeLeft, setTimeLeft] = useState(11 * 3600 + 21 * 60 + 52);
@@ -282,19 +276,14 @@ const App: React.FC = () => {
   // Helper: Get Video Embed URL
   const getVideoEmbedUrl = (url: string) => {
     if (!url) return null;
-
-    // YouTube
     const youtubeMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/)([^#&?]*))/);
     if (youtubeMatch && youtubeMatch[1]) {
       return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
     }
-
-    // TikTok (Simple iframe attempt using generic embed format)
     const tiktokMatch = url.match(/tiktok\.com\/@[\w.]+\/video\/(\d+)/);
     if (tiktokMatch && tiktokMatch[1]) {
       return `https://www.tiktok.com/embed/v2/${tiktokMatch[1]}?lang=id-ID`;
     }
-    
     return null;
   };
 
@@ -509,7 +498,7 @@ const App: React.FC = () => {
   const shippingCost = isFreeShipping ? 0 : 10000;
   const finalTotal = totalAfterPromo + shippingCost;
 
-  // Include all Admin Handlers here for full file correctness
+  // Admin Handlers
   const handleAddPromoIcon = () => { setEditingPromoIcon(null); setPromoIconFormData({ name: '', icon: 'Utensils', color: 'bg-orange-100', textColor: 'text-orange-600' }); setShowPromoIconModal(true); };
   const handleEditPromoIcon = (icon: PromoIconItem) => { setEditingPromoIcon(icon); setPromoIconFormData({ name: icon.name, icon: icon.icon, color: icon.color, textColor: icon.textColor }); setShowPromoIconModal(true); };
   const handleSavePromoIcon = (e: React.FormEvent) => { e.preventDefault(); if (editingPromoIcon) { setPromoIcons(promoIcons.map(i => i.id === editingPromoIcon.id ? { ...i, ...promoIconFormData } as PromoIconItem : i)); } else { const newIcon: PromoIconItem = { id: promoIcons.length > 0 ? Math.max(...promoIcons.map(i => i.id)) + 1 : 1, ...promoIconFormData } as PromoIconItem; setPromoIcons([...promoIcons, newIcon]); } setShowPromoIconModal(false); };
@@ -534,7 +523,6 @@ const App: React.FC = () => {
 
   const getCategoryKey = (catName: string) => { if (catName.toLowerCase().includes('keripik')) return 'keripik'; if (catName.toLowerCase().includes('parfum')) return 'parfum'; if (catName.toLowerCase().includes('kaos')) return 'kaos'; if (catName.toLowerCase().includes('snack')) return 'snack'; return null; };
   const handleCategoryClick = (catName: string) => { const key = getCategoryKey(catName); if (key) setSelectedCategory(prev => prev === key ? null : key); else setSelectedCategory(null); };
-  const getCategoryColor = (category: Product['category']) => (category === 'kaos' ? 'text-gray-700' : 'text-emerald-600');
   const openProductDetail = (product: Product) => { setSelectedProduct(product); setCurrentView('detail'); setCheckoutData({ name: '', address: '', whatsapp: '', quantity: 1, promoCode: '', notes: '' }); };
   const goBack = () => { if (currentView === 'detail') { setSelectedProduct(null); setCurrentView(activeTab); }};
 
@@ -587,7 +575,7 @@ const App: React.FC = () => {
        </div>
        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-6"><div><h3 className="font-bold text-gray-800">Statistik Penjualan</h3><p className="text-xs text-gray-500">Ringkasan 7 hari terakhir</p></div><span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg border border-gray-200">Mingguan</span></div>
-          <div className="h-56 w-full"><ResponsiveContainer width="100%" height="100%"><BarChart data={salesData}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" /><XAxis dataKey="name" tick={{fontSize: 10, fill: '#9ca3af'}} axisLine={false} tickLine={false} dy={10} /><YAxis hide /><Tooltip cursor={{fill: '#f0fdf4'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}} /><Bar dataKey="sales" fill="#10B981" radius={[6, 6, 0, 0]} barSize={24} /></BarChart></ResponsiveContainer></div>
+          <div className="h-56 w-full"><ResponsiveContainer width="100%" height="100%"><BarChart data={salesData}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" /><XAxis dataKey="name" tick={{fontSize: 10, fill: '#9ca3af'}} axisLine={false} tickLine={false} dy={10} /><YAxis hide /><Tooltip cursor={{fill: '#f0fdf4'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}} formatter={(value) => [`Rp${(Number(value) * 1000).toLocaleString()}`, 'Penjualan']} labelStyle={{color: '#374151', fontWeight: 'bold'}} /><Bar dataKey="sales" fill="#10B981" radius={[6, 6, 0, 0]} barSize={24} /></BarChart></ResponsiveContainer></div>
        </div>
     </div>
   );
@@ -719,7 +707,30 @@ const App: React.FC = () => {
                 {embedUrl && (<div className="mb-3 rounded-xl overflow-hidden border border-gray-100 aspect-video relative bg-black"><iframe src={embedUrl} className="w-full h-full absolute inset-0" allowFullScreen title="Embedded video"></iframe></div>)}
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <div className="flex space-x-6">
-                        <button onClick={() => handleLikePost(post.id)} className={`flex items-center space-x-1.5 text-sm ${post.isLiked ? 'text-pink-600' : 'text-gray-500'}`}><Heart size={20} className={post.isLiked ? 'fill-current' : ''} /><span>{post.likes}</span></button>
+                         {/* Reaction Group */}
+                         <div className="relative group">
+                            {/* Popup Emojis */}
+                            <div className="absolute bottom-full left-0 mb-2 hidden group-hover:flex bg-white shadow-lg rounded-full p-1 gap-1 z-10 border border-gray-100 animate-in fade-in slide-in-from-bottom-2">
+                                {['👍','❤️','😂','😮','😢','😡'].map(emoji => (
+                                    <button 
+                                        key={emoji} 
+                                        onClick={() => handleReaction(post.id, emoji)}
+                                        className="hover:scale-125 transition-transform text-xl p-1.5 hover:bg-gray-50 rounded-full leading-none"
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                            {/* Main Button */}
+                            <button 
+                                onClick={() => handleReaction(post.id, post.reaction || '❤️')} 
+                                className={`flex items-center space-x-1.5 text-sm py-1 px-2 rounded-lg hover:bg-gray-50 transition-colors ${post.reaction ? 'text-red-500' : 'text-gray-500'}`}
+                            >
+                                {post.reaction ? <span className="text-lg mr-1">{post.reaction}</span> : <Heart size={20} className="mr-1" />}
+                                <span>{post.likes}</span>
+                            </button>
+                        </div>
+
                         <button onClick={() => handleOpenComment(post.id)} className="flex items-center space-x-1.5 text-sm text-gray-500"><MessageCircle size={20} /><span>{post.comments}</span></button>
                         <button onClick={() => handleSharePost(post)} className="flex items-center space-x-1.5 text-sm text-gray-500"><Share2 size={20} /></button>
                     </div>
@@ -813,7 +824,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 max-w-md mx-auto relative overflow-hidden font-sans">
-      {(currentView === 'home' || currentView === 'admin' || currentView === 'detail' || currentView === 'cart' || currentView === 'feed' || currentView === 'promo' || currentView === 'live' || currentView === 'akun' || currentView === 'login' || currentView === 'register' || currentView === 'transaksi') && (<header className="bg-white shadow-sm pt-2 px-4 pb-1 sticky top-0 z-10"><div className="flex items-center justify-between mb-2"><div className="flex items-center space-x-3"><img src="https://i.ibb.co.com/60TdZLxD/Logo-Toko-Aneka-Cemilan-Snack-Ceria-Oranye-Kuning-20251105-010226-0000.png" alt="Kriuké Logo" className="w-10 h-10 object-contain" /><h1 className="text-xl font-bold text-emerald-700">Kriuké</h1><span className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full">Official</span></div><div className="flex items-center space-x-2"><button onClick={() => setCurrentView('live')} className="p-2 rounded-full hover:bg-gray-100"><Video size={20} className="text-red-500" /></button><button onClick={() => setCurrentView('cart')} className="p-2 rounded-full hover:bg-gray-100 relative"><ShoppingCart size={20} className="text-emerald-600" />{cartCount > 0 && (<span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">{cartCount}</span>)}</button><button onClick={() => setShowContactModal(true)} className="p-2 rounded-full hover:bg-gray-100"><MessageCircle size={20} className="text-green-600" /></button></div></div>{currentView === 'home' && (<div className="relative"><Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} /><input type="text" placeholder="Cari keripik, parfum, atau kaos..." className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-300"/></div>)}</header>)}
+      {(currentView === 'home' || currentView === 'admin' || currentView === 'detail' || currentView === 'cart' || currentView === 'feed' || currentView === 'promo' || currentView === 'live' || currentView === 'akun' || currentView === 'login' || currentView === 'register' || currentView === 'transaksi') && (<header className="bg-white shadow-sm pt-2 px-4 pb-1 sticky top-0 z-10"><div className="flex items-center justify-between mb-2"><div className="flex items-center space-x-3"><img src="https://i.ibb.co.com/60TdZLxD/Logo-Toko-Aneka-Cemilan-Snack-Ceria-Oranye-Kuning-20251105-010226-0000.png" alt="Logo Kriuké" className="w-10 h-10 object-contain" /><h1 className="text-xl font-bold text-emerald-700">Kriuké</h1><span className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full">Official</span></div><div className="flex items-center space-x-2"><button onClick={() => setCurrentView('live')} className="p-2 rounded-full hover:bg-gray-100"><Video size={20} className="text-red-500" /></button><button onClick={() => setCurrentView('cart')} className="p-2 rounded-full hover:bg-gray-100 relative"><ShoppingCart size={20} className="text-emerald-600" />{cartCount > 0 && (<span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">{cartCount}</span>)}</button><button onClick={() => setShowContactModal(true)} className="p-2 rounded-full hover:bg-gray-100"><MessageCircle size={20} className="text-green-600" /></button></div></div>{currentView === 'home' && (<div className="relative"><Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} /><input type="text" placeholder="Cari keripik, parfum, atau kaos..." className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-300"/></div>)}</header>)}
       <AnimatePresence mode="wait">
         {currentView === 'home' ? renderHome() :
          currentView === 'detail' ? renderDetail() :
