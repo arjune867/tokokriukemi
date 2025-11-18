@@ -10,6 +10,15 @@ export interface User {
   address?: string;
 }
 
+export interface Review {
+  id: number;
+  userName: string;
+  userAvatar: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -23,6 +32,7 @@ export interface Product {
   image: string;
   description: string;
   category: 'keripik' | 'snack' | 'kaos' | 'parfum';
+  reviews?: Review[];
 }
 
 export interface Category {
@@ -58,6 +68,16 @@ export interface FeedPost {
   likes: number;
   comments: number;
   isLiked: boolean;
+  reaction?: string | null;
+  commentsList?: Comment[];
+}
+
+export interface Comment {
+  id: number;
+  user: string;
+  avatar: string;
+  text: string;
+  time: string;
 }
 
 export interface CartItem extends Product {
@@ -73,5 +93,13 @@ export interface CheckoutData {
   notes: string;
 }
 
+export interface PromoIconItem {
+  id: number;
+  name: string;
+  icon: string; // Name of the lucide icon or emoji
+  color: string; // Tailwind bg class
+  textColor: string; // Tailwind text class
+}
+
 export type View = 'home' | 'detail' | 'cart' | 'admin' | 'feed' | 'promo' | 'akun' | 'login' | 'register' | 'live';
-export type AdminView = 'dashboard' | 'products' | 'categories' | 'promos' | 'streams';
+export type AdminView = 'dashboard' | 'products' | 'categories' | 'promos' | 'streams' | 'promo-icons';
