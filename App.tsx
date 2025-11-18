@@ -92,6 +92,9 @@ const App: React.FC = () => {
 
   // Feed Data
   const [newPostContent, setNewPostContent] = useState('');
+  const [newPostVideoUrl, setNewPostVideoUrl] = useState('');
+  const [showVideoInput, setShowVideoInput] = useState(false);
+
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([
     {
       id: 1,
@@ -100,7 +103,7 @@ const App: React.FC = () => {
       role: "admin",
       time: "30 menit yang lalu",
       content: "🔥 FLASH SALE ALERT! 🔥\nJangan lewatkan diskon hingga 25% untuk varian Keripik Pisang Coklat hari ini saja. Stok terbatas ya kak!",
-      image: "https://placehold.co/600x400/F0FDF4/047857?text=Flash+Sale+Alert!",
+      videoUrl: "https://www.youtube.com/watch?v=S5i3Jqj7C6s", // Dummy YouTube link
       likes: 124,
       comments: 2,
       isLiked: false,
@@ -116,14 +119,45 @@ const App: React.FC = () => {
       avatar: "https://placehold.co/100x100/fbbf24/ffffff?text=R",
       role: "customer",
       time: "2 jam yang lalu",
-      content: "Baru nyobain Parfum HRM varian Mistique, wanginya mewah banget! Tahan lama juga dipake seharian kerja. Recommended! 😍✨",
-      image: "https://placehold.co/600x400/F0FDF4/16A34A?text=Testimoni+Parfum",
+      content: "Unboxing paket dari Kriuké! Packing aman banget, bubble wrap tebel. Suka banget sama parfumnya 😍",
+      videoUrl: "https://www.tiktok.com/@tiktok/video/7106892042372500782", // Dummy TikTok Link
       likes: 45,
-      comments: 0,
+      comments: 1,
       isLiked: true,
       reaction: '❤️',
+      commentsList: [
+        { id: 201, user: "Kriuké Official", avatar: "https://placehold.co/100x100/10B981/ffffff?text=K", text: "Terima kasih kak Rina! Ditunggu orderan selanjutnya 🥰", time: "1 jam lalu" }
+      ]
+    },
+    {
+      id: 3,
+      user: "Dimas Anggara",
+      avatar: "https://placehold.co/100x100/purple/ffffff?text=D",
+      role: "customer",
+      time: "5 jam yang lalu",
+      content: "Nyobain keripik talasnya, renyah banget ga keras. Cocok buat temen nonton drakor 🍿",
+      image: "https://placehold.co/600x400/F0FDF4/065F46?text=Keripik+Talas",
+      likes: 23,
+      comments: 0,
+      isLiked: false,
+      reaction: null,
       commentsList: []
     },
+    {
+      id: 4,
+      user: "Kriuké Official",
+      avatar: "https://placehold.co/100x100/10B981/ffffff?text=K",
+      role: "admin",
+      time: "1 hari yang lalu",
+      content: "📦 Info Pengiriman:\nPesanan yang masuk sebelum jam 15.00 WIB akan dikirim di hari yang sama ya. Yuk checkout sekarang sebelum kehabisan stok!",
+      likes: 89,
+      comments: 3,
+      isLiked: false,
+      reaction: '👍',
+      commentsList: [
+         { id: 401, user: "User 123", avatar: "https://placehold.co/100x100/gray/ffffff?text=U", text: "Siap min, udah CO ya", time: "20 jam lalu" }
+      ]
+    }
   ]);
 
   // Products with Dummy Reviews
@@ -211,6 +245,25 @@ const App: React.FC = () => {
   };
   const { h, m, s } = formatTime(timeLeft);
 
+  // Helper: Get Video Embed URL
+  const getVideoEmbedUrl = (url: string) => {
+    if (!url) return null;
+
+    // YouTube
+    const youtubeMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/)([^#&?]*))/);
+    if (youtubeMatch && youtubeMatch[1]) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+
+    // TikTok (Simple iframe attempt using generic embed format)
+    const tiktokMatch = url.match(/tiktok\.com\/@[\w.]+\/video\/(\d+)/);
+    if (tiktokMatch && tiktokMatch[1]) {
+      return `https://www.tiktok.com/embed/v2/${tiktokMatch[1]}?lang=id-ID`;
+    }
+    
+    return null;
+  };
+
   // ... (Feed functions)
   const handleLikePost = (postId: number) => {
     setFeedPosts(prev => prev.map(post => {
@@ -237,7 +290,7 @@ const App: React.FC = () => {
 
   const handleCreatePost = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPostContent.trim()) return;
+    if (!newPostContent.trim() && !newPostVideoUrl.trim()) return;
     const newPost: FeedPost = {
       id: Date.now(),
       user: currentUser ? (currentUser.name || currentUser.username) : "Pengunjung",
@@ -245,6 +298,7 @@ const App: React.FC = () => {
       role: currentUser?.role || 'customer',
       time: "Baru saja",
       content: newPostContent,
+      videoUrl: newPostVideoUrl || undefined,
       likes: 0,
       comments: 0,
       isLiked: false,
@@ -253,6 +307,8 @@ const App: React.FC = () => {
     };
     setFeedPosts([newPost, ...feedPosts]);
     setNewPostContent('');
+    setNewPostVideoUrl('');
+    setShowVideoInput(false);
   };
   const handleOpenComment = (postId: number) => { setActivePostId(postId); setShowCommentModal(true); };
   const handlePostComment = (e: React.FormEvent) => {
@@ -398,7 +454,6 @@ const App: React.FC = () => {
   const shippingCost = isFreeShipping ? 0 : 10000;
   const finalTotal = totalAfterPromo + shippingCost;
 
-  // ... (Admin functions omitted for brevity, assuming unchanged logic but included in full file structure if needed)
   // Include all Admin Handlers here for full file correctness
   const handleAddPromoIcon = () => { setEditingPromoIcon(null); setPromoIconFormData({ name: '', icon: 'Utensils', color: 'bg-orange-100', textColor: 'text-orange-600' }); setShowPromoIconModal(true); };
   const handleEditPromoIcon = (icon: PromoIconItem) => { setEditingPromoIcon(icon); setPromoIconFormData({ name: icon.name, icon: icon.icon, color: icon.color, textColor: icon.textColor }); setShowPromoIconModal(true); };
@@ -440,7 +495,7 @@ const App: React.FC = () => {
 
   const activePost = activePostId ? feedPosts.find(p => p.id === activePostId) : null;
 
-  // ... (Render Views - Home, Detail, etc.)
+  // ... (Render Views)
   const renderHome = () => {
     const flashSaleProducts = products.slice(0, 3);
     const filteredProducts = selectedCategory ? products.filter(p => p.category === selectedCategory) : products;
@@ -510,6 +565,7 @@ const App: React.FC = () => {
     );
   };
 
+  // ... (renderDetail, renderCart etc. kept same as provided)
   const renderDetail = () => {
     if (!selectedProduct) return null;
     
@@ -518,200 +574,61 @@ const App: React.FC = () => {
 
     return (
       <motion.div key="detail" initial={{ opacity: 0, x: "100%" }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: "100%" }} className="flex-1 overflow-y-auto bg-white pb-24">
-        {/* Product Image */}
         <div className="relative">
           <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-80 object-cover" />
           <button onClick={goBack} className="absolute top-4 left-4 bg-white/80 p-2 rounded-full hover:bg-white text-gray-800 shadow-sm"><ChevronLeft size={24} /></button>
           <button onClick={() => setShowShare(true)} className="absolute top-4 right-4 bg-white/80 p-2 rounded-full hover:bg-white text-gray-800 shadow-sm"><Share2 size={24} /></button>
         </div>
-
         <div className="p-4">
-          {/* Title & Price */}
           <div className="mb-3">
              <h1 className="text-2xl font-bold text-gray-800 mb-1">{selectedProduct.name}</h1>
              <div className="flex items-center space-x-2">
                <span className="text-emerald-600 font-bold text-2xl">Rp{selectedProduct.price.toLocaleString()}</span>
                {selectedProduct.originalPrice > selectedProduct.price && (
-                 <>
-                  <span className="text-gray-400 line-through text-sm">Rp{selectedProduct.originalPrice.toLocaleString()}</span>
-                  <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded">-{selectedProduct.discount}%</span>
-                 </>
+                 <><span className="text-gray-400 line-through text-sm">Rp{selectedProduct.originalPrice.toLocaleString()}</span><span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded">-{selectedProduct.discount}%</span></>
                )}
              </div>
           </div>
-          
-          {/* Rating & Sold Stats */}
           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4 border-y py-3">
-            <div className="flex items-center">
-                <Star className="text-amber-400 fill-current mr-1" size={18} />
-                <span className="font-bold text-gray-800 mr-1">{selectedProduct.rating}</span>
-                <span className="text-gray-400">({reviews.length})</span>
-            </div>
-            <div className="w-px h-4 bg-gray-300"></div>
-            <div>{selectedProduct.sold.toLocaleString()} Terjual</div>
-            <div className="w-px h-4 bg-gray-300"></div>
-            <div className="flex items-center text-emerald-600"><Truck size={16} className="mr-1" />{selectedProduct.freeShipping ? 'Bebas Ongkir' : 'Reguler'}</div>
+            <div className="flex items-center"><Star className="text-amber-400 fill-current mr-1" size={18} /><span className="font-bold text-gray-800 mr-1">{selectedProduct.rating}</span><span className="text-gray-400">({reviews.length})</span></div>
+            <div className="w-px h-4 bg-gray-300"></div><div>{selectedProduct.sold.toLocaleString()} Terjual</div><div className="w-px h-4 bg-gray-300"></div><div className="flex items-center text-emerald-600"><Truck size={16} className="mr-1" />{selectedProduct.freeShipping ? 'Bebas Ongkir' : 'Reguler'}</div>
           </div>
-
-          {/* Description */}
-          <div className="mb-6">
-            <h3 className="font-bold text-gray-800 mb-2">Deskripsi Produk</h3>
-            <p className="text-gray-600 leading-relaxed text-sm">{selectedProduct.description}</p>
-          </div>
-
-          {/* Chat Button */}
+          <div className="mb-6"><h3 className="font-bold text-gray-800 mb-2">Deskripsi Produk</h3><p className="text-gray-600 leading-relaxed text-sm">{selectedProduct.description}</p></div>
           <div className="flex items-center p-3 bg-gray-50 rounded-lg mb-6 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => setShowContactModal(true)}>
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-emerald-600 shadow-sm mr-3 border border-gray-100">
-              <MessageCircle size={20} />
-            </div>
-            <div className="flex-1">
-              <p className="font-bold text-sm text-gray-800">Chat Admin</p>
-              <p className="text-xs text-gray-500">Tanya stok atau detail produk</p>
-            </div>
-            <ChevronRight size={16} className="text-gray-400" />
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-emerald-600 shadow-sm mr-3 border border-gray-100"><MessageCircle size={20} /></div>
+            <div className="flex-1"><p className="font-bold text-sm text-gray-800">Chat Admin</p><p className="text-xs text-gray-500">Tanya stok atau detail produk</p></div><ChevronRight size={16} className="text-gray-400" />
           </div>
-
-          {/* Reviews Section */}
           <div className="mb-8">
-             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-gray-800 text-lg">Ulasan Pembeli</h3>
-                <button onClick={openReviewModal} className="text-emerald-600 text-sm font-bold">Tulis Ulasan</button>
-             </div>
-             
-             {/* Rating Summary */}
+             <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800 text-lg">Ulasan Pembeli</h3><button onClick={openReviewModal} className="text-emerald-600 text-sm font-bold">Tulis Ulasan</button></div>
              <div className="flex items-center bg-gray-50 p-4 rounded-xl mb-4">
-                <div className="text-center mr-6">
-                    <span className="text-4xl font-bold text-gray-800 block">{selectedProduct.rating}</span>
-                    <div className="flex justify-center my-1">
-                        {[...Array(5)].map((_, i) => (
-                            <Star key={i} size={12} className={`${i < Math.floor(selectedProduct.rating) ? "text-amber-400 fill-current" : "text-gray-300"}`} />
-                        ))}
-                    </div>
-                    <span className="text-xs text-gray-500">{reviews.length} ulasan</span>
-                </div>
-                <div className="flex-1 space-y-1">
-                    {[5, 4, 3, 2, 1].map(star => (
-                        <div key={star} className="flex items-center text-xs">
-                            <Star size={10} className="text-gray-400 mr-2" />
-                            <span className="w-2 mr-2">{star}</span>
-                            <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-amber-400 rounded-full" style={{ width: reviews.length > 0 ? `${(reviews.filter(r => r.rating === star).length / reviews.length) * 100}%` : '0%' }}></div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                <div className="text-center mr-6"><span className="text-4xl font-bold text-gray-800 block">{selectedProduct.rating}</span><div className="flex justify-center my-1">{[...Array(5)].map((_, i) => (<Star key={i} size={12} className={`${i < Math.floor(selectedProduct.rating) ? "text-amber-400 fill-current" : "text-gray-300"}`} />))}</div><span className="text-xs text-gray-500">{reviews.length} ulasan</span></div>
+                <div className="flex-1 space-y-1">{[5, 4, 3, 2, 1].map(star => (<div key={star} className="flex items-center text-xs"><Star size={10} className="text-gray-400 mr-2" /><span className="w-2 mr-2">{star}</span><div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full bg-amber-400 rounded-full" style={{ width: reviews.length > 0 ? `${(reviews.filter(r => r.rating === star).length / reviews.length) * 100}%` : '0%' }}></div></div></div>))}</div>
              </div>
-
-             {/* Review List */}
-             <div className="space-y-4">
-                {reviews.length > 0 ? (
-                    reviews.map((review) => (
-                        <div key={review.id} className="border-b border-gray-100 pb-4 last:border-0">
-                            <div className="flex items-center mb-2">
-                                <img src={review.userAvatar} alt={review.userName} className="w-8 h-8 rounded-full mr-3" />
-                                <div>
-                                    <p className="text-sm font-bold text-gray-800">{review.userName}</p>
-                                    <div className="flex items-center">
-                                        <div className="flex mr-2">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} size={10} className={`${i < review.rating ? "text-amber-400 fill-current" : "text-gray-300"}`} />
-                                            ))}
-                                        </div>
-                                        <span className="text-[10px] text-gray-400">{review.date}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <p className="text-sm text-gray-600 leading-snug">{review.comment}</p>
-                        </div>
-                    ))
-                ) : (
-                    <p className="text-center text-gray-500 text-sm py-4">Belum ada ulasan untuk produk ini.</p>
-                )}
-             </div>
+             <div className="space-y-4">{reviews.length > 0 ? (reviews.map((review) => (<div key={review.id} className="border-b border-gray-100 pb-4 last:border-0"><div className="flex items-center mb-2"><img src={review.userAvatar} alt={review.userName} className="w-8 h-8 rounded-full mr-3" /><div><p className="text-sm font-bold text-gray-800">{review.userName}</p><div className="flex items-center"><div className="flex mr-2">{[...Array(5)].map((_, i) => (<Star key={i} size={10} className={`${i < review.rating ? "text-amber-400 fill-current" : "text-gray-300"}`} />))}</div><span className="text-[10px] text-gray-400">{review.date}</span></div></div></div><p className="text-sm text-gray-600 leading-snug">{review.comment}</p></div>))) : (<p className="text-center text-gray-500 text-sm py-4">Belum ada ulasan untuk produk ini.</p>)}</div>
           </div>
-          
-          {/* Recommendation Slider */}
-          <div>
-             <h3 className="font-bold text-gray-800 mb-3">Rekomendasi Lainnya</h3>
-             <div className="flex space-x-3 overflow-x-auto scrollbar-hide pb-4">
-                {recommendedProducts.map(product => (
-                    <div key={product.id} className="min-w-[140px] w-[140px] bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm cursor-pointer" onClick={() => openProductDetail(product)}>
-                        <div className="h-32 relative">
-                            <img src={product.image} className="w-full h-full object-cover" />
-                            {product.discount > 0 && <span className="absolute top-1 left-1 bg-red-500 text-white text-[10px] px-1 rounded">-{product.discount}%</span>}
-                        </div>
-                        <div className="p-2">
-                            <h4 className="text-xs font-medium text-gray-800 line-clamp-2 h-8">{product.name}</h4>
-                            <p className="text-emerald-600 font-bold text-xs mt-1">Rp{product.price.toLocaleString()}</p>
-                        </div>
-                    </div>
-                ))}
-             </div>
-          </div>
+          <div><h3 className="font-bold text-gray-800 mb-3">Rekomendasi Lainnya</h3><div className="flex space-x-3 overflow-x-auto scrollbar-hide pb-4">{recommendedProducts.map(product => (<div key={product.id} className="min-w-[140px] w-[140px] bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm cursor-pointer" onClick={() => openProductDetail(product)}><div className="h-32 relative"><img src={product.image} className="w-full h-full object-cover" />{product.discount > 0 && <span className="absolute top-1 left-1 bg-red-500 text-white text-[10px] px-1 rounded">-{product.discount}%</span>}</div><div className="p-2"><h4 className="text-xs font-medium text-gray-800 line-clamp-2 h-8">{product.name}</h4><p className="text-emerald-600 font-bold text-xs mt-1">Rp{product.price.toLocaleString()}</p></div></div>))}</div></div>
         </div>
-        
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex items-center space-x-3 max-w-md mx-auto z-10">
-           <button onClick={() => addToCart(selectedProduct)} className="flex-1 border border-emerald-600 text-emerald-600 py-3 rounded-xl font-bold hover:bg-emerald-50 flex justify-center items-center">
-             <Plus size={18} className="mr-1" /> Keranjang
-           </button>
-           <button onClick={handleBuyNow} className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700">
-             Beli Sekarang
-           </button>
-        </div>
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex items-center space-x-3 max-w-md mx-auto z-10"><button onClick={() => addToCart(selectedProduct)} className="flex-1 border border-emerald-600 text-emerald-600 py-3 rounded-xl font-bold hover:bg-emerald-50 flex justify-center items-center"><Plus size={18} className="mr-1" /> Keranjang</button><button onClick={handleBuyNow} className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700">Beli Sekarang</button></div>
       </motion.div>
     );
   };
-
+  
   const renderCart = () => (
     <motion.div key="cart" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 overflow-y-auto bg-gray-50 pb-24 p-4">
        <h2 className="text-2xl font-bold text-gray-800 mb-4">Keranjang</h2>
        {cart.length === 0 ? (
-         <div className="text-center py-20">
-            <ShoppingCart size={64} className="text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 mb-4">Keranjang belanja masih kosong.</p>
-            <button onClick={() => {setCurrentView('home'); setActiveTab('home');}} className="bg-emerald-600 text-white px-6 py-2 rounded-full font-medium">Belanja Sekarang</button>
-         </div>
+         <div className="text-center py-20"><ShoppingCart size={64} className="text-gray-300 mx-auto mb-4" /><p className="text-gray-500 mb-4">Keranjang belanja masih kosong.</p><button onClick={() => {setCurrentView('home'); setActiveTab('home');}} className="bg-emerald-600 text-white px-6 py-2 rounded-full font-medium">Belanja Sekarang</button></div>
        ) : (
          <div className="space-y-4">
            {cart.map(item => (
-             <div key={item.id} className="bg-white p-3 rounded-xl shadow-sm flex">
-                <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-gray-100" />
-                <div className="ml-3 flex-1 flex flex-col justify-between">
-                   <div>
-                      <div className="flex justify-between">
-                        <h3 className="font-medium text-gray-800 line-clamp-1">{item.name}</h3>
-                        <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500"><Trash2 size={16} /></button>
-                      </div>
-                      <p className="text-emerald-600 font-bold">Rp{item.price.toLocaleString()}</p>
-                   </div>
-                   <div className="flex justify-between items-center">
-                      <div className="flex items-center border rounded-lg">
-                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-2 py-1 text-emerald-600">-</button>
-                        <span className="px-2 text-sm font-medium">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-2 py-1 text-emerald-600">+</button>
-                      </div>
-                   </div>
-                </div>
-             </div>
+             <div key={item.id} className="bg-white p-3 rounded-xl shadow-sm flex"><img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-gray-100" /><div className="ml-3 flex-1 flex flex-col justify-between"><div><div className="flex justify-between"><h3 className="font-medium text-gray-800 line-clamp-1">{item.name}</h3><button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500"><Trash2 size={16} /></button></div><p className="text-emerald-600 font-bold">Rp{item.price.toLocaleString()}</p></div><div className="flex justify-between items-center"><div className="flex items-center border rounded-lg"><button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-2 py-1 text-emerald-600">-</button><span className="px-2 text-sm font-medium">{item.quantity}</span><button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-2 py-1 text-emerald-600">+</button></div></div></div></div>
            ))}
-           
-           <div className="fixed bottom-16 left-0 right-0 bg-white border-t p-4 max-w-md mx-auto">
-              <div className="flex justify-between mb-2">
-                 <span className="text-gray-600">Total ({cartCount} barang)</span>
-                 <span className="font-bold text-lg text-emerald-600">Rp{cartTotal.toLocaleString()}</span>
-              </div>
-              <button onClick={handleCartCheckout} className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700">
-                Checkout
-              </button>
-           </div>
+           <div className="fixed bottom-16 left-0 right-0 bg-white border-t p-4 max-w-md mx-auto"><div className="flex justify-between mb-2"><span className="text-gray-600">Total ({cartCount} barang)</span><span className="font-bold text-lg text-emerald-600">Rp{cartTotal.toLocaleString()}</span></div><button onClick={handleCartCheckout} className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700">Checkout</button></div>
          </div>
        )}
     </motion.div>
   );
 
-  // ... (renderFeed, renderLogin, renderRegister, renderPromoPage, renderLive, renderAccount, renderAdmin... functions remain the same as previous file)
-  // Including them for completeness
-  
   const renderFeed = () => (
     <motion.div key="feed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 overflow-y-auto bg-gray-50 pb-20">
       <div className="bg-white p-4 mb-2 shadow-sm">
@@ -720,9 +637,17 @@ const App: React.FC = () => {
                {currentUser ? <span className="text-gray-600 font-bold">{currentUser.name?.charAt(0)}</span> : <User size={20} className="text-gray-400" />}
             </div>
             <form onSubmit={handleCreatePost} className="flex-1">
-               <input type="text" value={newPostContent} onChange={(e) => setNewPostContent(e.target.value)} placeholder="Apa yang Anda pikirkan?" className="w-full bg-gray-100 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-300 mb-2" />
+               <div className="flex items-center bg-gray-100 rounded-full px-4 py-2.5 mb-2">
+                  <input type="text" value={newPostContent} onChange={(e) => setNewPostContent(e.target.value)} placeholder="Apa yang Anda pikirkan?" className="flex-1 bg-transparent focus:outline-none text-sm" />
+                  <button type="button" onClick={() => setShowVideoInput(!showVideoInput)} className={`ml-2 ${showVideoInput ? 'text-emerald-600' : 'text-gray-400'}`}><LinkIcon size={18} /></button>
+               </div>
+               {showVideoInput && (
+                 <div className="mb-2 animate-in slide-in-from-top-2 fade-in">
+                   <input type="text" value={newPostVideoUrl} onChange={(e) => setNewPostVideoUrl(e.target.value)} placeholder="Link YouTube/TikTok (Optional)" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-500" />
+                 </div>
+               )}
                <div className="flex justify-end">
-                  <button type="submit" disabled={!newPostContent.trim()} className={`px-4 py-1.5 rounded-full text-sm font-medium ${newPostContent.trim() ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-400'}`}>Posting</button>
+                  <button type="submit" disabled={!newPostContent.trim() && !newPostVideoUrl.trim()} className={`px-4 py-1.5 rounded-full text-sm font-medium ${(!newPostContent.trim() && !newPostVideoUrl.trim()) ? 'bg-gray-200 text-gray-400' : 'bg-emerald-600 text-white'}`}>Posting</button>
                </div>
             </form>
          </div>
@@ -745,7 +670,29 @@ const App: React.FC = () => {
                 <button onClick={() => handleSharePost(post)} className="text-gray-400"><Share2 size={18} /></button>
              </div>
              <p className="text-gray-800 text-sm mb-3 whitespace-pre-line">{post.content}</p>
-             {post.image && (
+             
+             {/* Video Embed Rendering */}
+             {post.videoUrl && (
+               <div className="mb-3 rounded-lg overflow-hidden bg-black aspect-video relative">
+                  {getVideoEmbedUrl(post.videoUrl) ? (
+                    <iframe 
+                      src={getVideoEmbedUrl(post.videoUrl)!} 
+                      title="Embedded Video" 
+                      className="w-full h-full border-0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                    ></iframe>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-900 p-4 text-center">
+                        <LinkIcon size={32} className="mb-2 opacity-50" />
+                        <p className="text-xs mb-2 truncate w-full px-4">{post.videoUrl}</p>
+                        <a href={post.videoUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-500 text-sm font-bold underline">Buka Link Video</a>
+                    </div>
+                  )}
+               </div>
+             )}
+
+             {post.image && !post.videoUrl && (
                 <div className="mb-3 rounded-lg overflow-hidden">
                    <img src={post.image} alt="Feed Content" className="w-full h-auto" />
                 </div>
@@ -779,6 +726,7 @@ const App: React.FC = () => {
   const renderLive = () => ( <motion.div key="live" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 overflow-y-auto bg-gray-900 text-white pb-20"><div className="p-4 border-b border-gray-800 flex justify-between items-center sticky top-0 bg-gray-900 z-10"><h2 className="text-xl font-bold flex items-center"><div className="w-3 h-3 bg-red-500 rounded-full mr-2 animate-pulse"></div>Live Streaming</h2><button onClick={() => setCurrentView('home')} className="text-gray-400 hover:text-white"><X size={24} /></button></div><div className="p-4 space-y-6">{streams.map(stream => (<div key={stream.id} className="bg-gray-800 rounded-xl overflow-hidden"><div className="relative aspect-video bg-black"><iframe src={`https://www.youtube.com/embed/${stream.url.split('/').pop()}`} title={stream.title} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe><div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded flex items-center">LIVE</div><div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center"><User size={12} className="mr-1" />{stream.viewers}</div></div><div className="p-3"><h3 className="font-bold text-lg">{stream.title}</h3><p className="text-gray-400 text-sm">Kriuké Official Store</p></div></div>))}{streams.length === 0 && (<div className="text-center py-20 text-gray-500"><Video size={48} className="mx-auto mb-4 opacity-50" /><p>Belum ada live streaming saat ini.</p></div>)}</div></motion.div>);
   const renderAccount = () => ( <motion.div key="account" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 overflow-y-auto bg-gray-50 pb-20">{currentUser ? (<><div className="bg-white p-6 mb-2"><div className="flex items-center space-x-4 mb-6"><div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold text-2xl">{currentUser.name?.charAt(0)}</div><div><h2 className="text-xl font-bold text-gray-800">{currentUser.name}</h2><p className="text-gray-500">{currentUser.email}</p>{currentUser.role === 'admin' && <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded font-bold mt-1 inline-block">Administrator</span>}</div></div><div className="grid grid-cols-2 gap-3"><div className="bg-gray-50 p-3 rounded-lg text-center"><span className="block font-bold text-lg text-gray-800">12</span><span className="text-xs text-gray-500">Pesanan</span></div><div className="bg-gray-50 p-3 rounded-lg text-center"><span className="block font-bold text-lg text-gray-800">5</span><span className="text-xs text-gray-500">Voucher</span></div></div></div><div className="bg-white p-4 mb-2 space-y-1">{currentUser.role === 'admin' && (<button onClick={() => setCurrentView('admin')} className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg text-left"><div className="flex items-center text-gray-700"><BarChart3 size={20} className="mr-3 text-blue-500" />Dashboard Admin</div><ChevronRight size={16} className="text-gray-300" /></button>)}<button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg text-left"><div className="flex items-center text-gray-700"><Package size={20} className="mr-3 text-emerald-500" />Riwayat Pesanan</div><ChevronRight size={16} className="text-gray-300" /></button><button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg text-left"><div className="flex items-center text-gray-700"><MapPin size={20} className="mr-3 text-orange-500" />Alamat Tersimpan</div><ChevronRight size={16} className="text-gray-300" /></button></div><div className="bg-white p-4"><button onClick={handleLogout} className="w-full flex items-center justify-center p-3 text-red-600 font-bold hover:bg-red-50 rounded-lg border border-red-100"><LogOut size={20} className="mr-2" /> Keluar</button></div></>) : (<div className="flex flex-col items-center justify-center h-full p-6 text-center"><User size={64} className="text-gray-300 mb-4" /><h2 className="text-xl font-bold text-gray-800 mb-2">Belum Login</h2><p className="text-gray-500 mb-6">Login untuk akses profil dan riwayat pesanan.</p><button onClick={() => setCurrentView('login')} className="bg-emerald-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-emerald-200">Login / Daftar</button></div>)}</motion.div>);
 
+  // ... (Other admin renders remain the same as provided in your full file)
   const renderAdminDashboard = () => (
     <div className="p-6 pb-20 bg-gray-50/50 min-h-full">
        <div className="flex items-center justify-between mb-8">
@@ -790,220 +738,65 @@ const App: React.FC = () => {
             <Crown size={24} className="text-yellow-500" />
           </div>
        </div>
-
-       {/* Stats Grid */}
        <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-5">
-                <Wallet size={64} className="text-emerald-600" />
-             </div>
-             <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 mb-3">
-                <Wallet size={20} />
-             </div>
-             <p className="text-gray-500 text-xs font-medium uppercase tracking-wider">Pendapatan</p>
-             <h3 className="text-2xl font-bold text-gray-800 mt-1">Rp12.5jt</h3>
-             <p className="text-xs text-emerald-600 mt-2 font-medium flex items-center">
-                <TrendingUp size={14} className="mr-1" /> +15% mingguan
-             </p>
+             <div className="absolute top-0 right-0 p-4 opacity-5"><Wallet size={64} className="text-emerald-600" /></div>
+             <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 mb-3"><Wallet size={20} /></div>
+             <p className="text-gray-500 text-xs font-medium uppercase tracking-wider">Pendapatan</p><h3 className="text-2xl font-bold text-gray-800 mt-1">Rp12.5jt</h3><p className="text-xs text-emerald-600 mt-2 font-medium flex items-center"><TrendingUp size={14} className="mr-1" /> +15% mingguan</p>
           </div>
-
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-5">
-                <ShoppingBag size={64} className="text-blue-600" />
-             </div>
-             <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-3">
-                <ShoppingBag size={20} />
-             </div>
-             <p className="text-gray-500 text-xs font-medium uppercase tracking-wider">Pesanan</p>
-             <h3 className="text-2xl font-bold text-gray-800 mt-1">87</h3>
-             <p className="text-xs text-blue-600 mt-2 font-medium flex items-center">
-                <Clock size={14} className="mr-1" /> 12 perlu diproses
-             </p>
+             <div className="absolute top-0 right-0 p-4 opacity-5"><ShoppingBag size={64} className="text-blue-600" /></div>
+             <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-3"><ShoppingBag size={20} /></div>
+             <p className="text-gray-500 text-xs font-medium uppercase tracking-wider">Pesanan</p><h3 className="text-2xl font-bold text-gray-800 mt-1">87</h3><p className="text-xs text-blue-600 mt-2 font-medium flex items-center"><Clock size={14} className="mr-1" /> 12 perlu diproses</p>
           </div>
        </div>
-
-       {/* Menu Grid - Friendly Grid Icons */}
        <h3 className="font-bold text-gray-800 mb-4 text-lg">Menu Kelola</h3>
        <div className="grid grid-cols-3 gap-4 mb-8">
-           {[
-             { id: 'products', label: 'Produk', icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-             { id: 'categories', label: 'Kategori', icon: Grid, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-             { id: 'promos', label: 'Voucher', icon: Ticket, color: 'text-orange-600', bg: 'bg-orange-50' },
-             { id: 'promo-icons', label: 'Menu Ikon', icon: LayoutGrid, color: 'text-pink-600', bg: 'bg-pink-50' },
-             { id: 'streams', label: 'Live', icon: Video, color: 'text-red-600', bg: 'bg-red-50' },
-             { id: 'settings', label: 'Pengaturan', icon: Settings, color: 'text-gray-600', bg: 'bg-gray-100', action: () => alert('Fitur Pengaturan akan segera hadir!') },
-           ].map((item, idx) => (
-             <button 
-                key={idx} 
-                onClick={() => item.action ? item.action() : setAdminView(item.id as AdminView)} 
-                className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center aspect-square hover:shadow-md hover:-translate-y-1 transition-all duration-200"
-             >
-                 <div className={`w-12 h-12 ${item.bg} rounded-xl flex items-center justify-center mb-3 ${item.color}`}>
-                    <item.icon size={24} strokeWidth={2.5} />
-                 </div>
-                 <span className="text-xs font-bold text-gray-700">{item.label}</span>
+           {[{ id: 'products', label: 'Produk', icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' }, { id: 'categories', label: 'Kategori', icon: Grid, color: 'text-indigo-600', bg: 'bg-indigo-50' }, { id: 'promos', label: 'Voucher', icon: Ticket, color: 'text-orange-600', bg: 'bg-orange-50' }, { id: 'promo-icons', label: 'Menu Ikon', icon: LayoutGrid, color: 'text-pink-600', bg: 'bg-pink-50' }, { id: 'streams', label: 'Live', icon: Video, color: 'text-red-600', bg: 'bg-red-50' }, { id: 'settings', label: 'Pengaturan', icon: Settings, color: 'text-gray-600', bg: 'bg-gray-100', action: () => alert('Fitur Pengaturan akan segera hadir!') }].map((item, idx) => (
+             <button key={idx} onClick={() => item.action ? item.action() : setAdminView(item.id as AdminView)} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center aspect-square hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+                 <div className={`w-12 h-12 ${item.bg} rounded-xl flex items-center justify-center mb-3 ${item.color}`}><item.icon size={24} strokeWidth={2.5} /></div><span className="text-xs font-bold text-gray-700">{item.label}</span>
              </button>
            ))}
        </div>
-
-       {/* Analytics Chart */}
        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
-             <div>
-               <h3 className="font-bold text-gray-800">Statistik Penjualan</h3>
-               <p className="text-xs text-gray-500">Ringkasan 7 hari terakhir</p>
-             </div>
-             <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg border border-gray-200">Mingguan</span>
-          </div>
-          <div className="h-56 w-full">
-             <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={salesData}>
-                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                   <XAxis dataKey="name" tick={{fontSize: 10, fill: '#9ca3af'}} axisLine={false} tickLine={false} dy={10} />
-                   <YAxis hide />
-                   <Tooltip cursor={{fill: '#f0fdf4'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}} />
-                   <Bar dataKey="sales" fill="#10B981" radius={[6, 6, 0, 0]} barSize={24} />
-                </BarChart>
-             </ResponsiveContainer>
-          </div>
+          <div className="flex items-center justify-between mb-6"><div><h3 className="font-bold text-gray-800">Statistik Penjualan</h3><p className="text-xs text-gray-500">Ringkasan 7 hari terakhir</p></div><span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg border border-gray-200">Mingguan</span></div>
+          <div className="h-56 w-full"><ResponsiveContainer width="100%" height="100%"><BarChart data={salesData}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" /><XAxis dataKey="name" tick={{fontSize: 10, fill: '#9ca3af'}} axisLine={false} tickLine={false} dy={10} /><YAxis hide /><Tooltip cursor={{fill: '#f0fdf4'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}} /><Bar dataKey="sales" fill="#10B981" radius={[6, 6, 0, 0]} barSize={24} /></BarChart></ResponsiveContainer></div>
        </div>
     </div>
   );
 
   const renderAdminProducts = () => (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Kelola Produk</h2>
-        <button onClick={handleAddProduct} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><Plus size={18} className="mr-1" /> Tambah</button>
-      </div>
-      <div className="space-y-3">
-         {products.map(product => (
-           <div key={product.id} className="bg-white p-3 rounded-xl shadow-sm flex items-center">
-             <img src={product.image} alt={product.name} className="w-16 h-16 rounded-lg object-cover bg-gray-100" />
-             <div className="ml-3 flex-1">
-               <h3 className="font-bold text-gray-800 text-sm line-clamp-1">{product.name}</h3>
-               <p className="text-emerald-600 font-medium text-sm">Rp{product.price.toLocaleString()}</p>
-               <div className="flex items-center text-xs text-gray-500 mt-1">
-                 <span className="bg-gray-100 px-2 py-0.5 rounded mr-2">{product.category}</span>
-                 <span>Stok: {product.sold > 1000 ? 'Banyak' : 'Terbatas'}</span>
-               </div>
-             </div>
-             <div className="flex flex-col space-y-2 ml-2">
-               <button onClick={() => handleEditProduct(product)} className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Edit3 size={16} /></button>
-               <button onClick={() => deleteProduct(product.id)} className="p-1.5 bg-red-50 text-red-600 rounded-lg"><Trash2 size={16} /></button>
-             </div>
-           </div>
-         ))}
-      </div>
+      <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-gray-800">Kelola Produk</h2><button onClick={handleAddProduct} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><Plus size={18} className="mr-1" /> Tambah</button></div>
+      <div className="space-y-3">{products.map(product => (<div key={product.id} className="bg-white p-3 rounded-xl shadow-sm flex items-center"><img src={product.image} alt={product.name} className="w-16 h-16 rounded-lg object-cover bg-gray-100" /><div className="ml-3 flex-1"><h3 className="font-bold text-gray-800 text-sm line-clamp-1">{product.name}</h3><p className="text-emerald-600 font-medium text-sm">Rp{product.price.toLocaleString()}</p><div className="flex items-center text-xs text-gray-500 mt-1"><span className="bg-gray-100 px-2 py-0.5 rounded mr-2">{product.category}</span><span>Stok: {product.sold > 1000 ? 'Banyak' : 'Terbatas'}</span></div></div><div className="flex flex-col space-y-2 ml-2"><button onClick={() => handleEditProduct(product)} className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Edit3 size={16} /></button><button onClick={() => deleteProduct(product.id)} className="p-1.5 bg-red-50 text-red-600 rounded-lg"><Trash2 size={16} /></button></div></div>))}</div>
     </div>
   );
 
   const renderAdminCategories = () => (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Kategori</h2>
-        <button onClick={handleAddCategory} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><Plus size={18} className="mr-1" /> Tambah</button>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-         {categories.map(cat => (
-           <div key={cat.id} className="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center text-center relative group">
-              <div className={`w-14 h-14 ${cat.color} rounded-full flex items-center justify-center text-2xl mb-2`}>{cat.icon}</div>
-              <h3 className="font-bold text-gray-800">{cat.name}</h3>
-              <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                 <button onClick={() => handleEditCategory(cat)} className="p-1 bg-blue-50 text-blue-600 rounded"><Edit3 size={12} /></button>
-                 <button onClick={() => deleteCategory(cat.id)} className="p-1 bg-red-50 text-red-600 rounded"><Trash2 size={12} /></button>
-              </div>
-           </div>
-         ))}
-      </div>
+      <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-gray-800">Kategori</h2><button onClick={handleAddCategory} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><Plus size={18} className="mr-1" /> Tambah</button></div>
+      <div className="grid grid-cols-2 gap-4">{categories.map(cat => (<div key={cat.id} className="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center text-center relative group"><div className={`w-14 h-14 ${cat.color} rounded-full flex items-center justify-center text-2xl mb-2`}>{cat.icon}</div><h3 className="font-bold text-gray-800">{cat.name}</h3><div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => handleEditCategory(cat)} className="p-1 bg-blue-50 text-blue-600 rounded"><Edit3 size={12} /></button><button onClick={() => deleteCategory(cat.id)} className="p-1 bg-red-50 text-red-600 rounded"><Trash2 size={12} /></button></div></div>))}</div>
     </div>
   );
 
   const renderAdminPromos = () => (
     <div className="p-4">
-       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Voucher Promo</h2>
-        <button onClick={handleAddPromo} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><Plus size={18} className="mr-1" /> Tambah</button>
-      </div>
-      <div className="space-y-3">
-         {promos.map(promo => (
-            <div key={promo.id} className={`bg-white p-4 rounded-xl shadow-sm border-l-4 ${promo.active ? 'border-emerald-500' : 'border-gray-300'}`}>
-               <div className="flex justify-between items-start">
-                  <div>
-                     <h3 className="font-bold text-lg text-gray-800">{promo.code}</h3>
-                     <p className="text-sm text-gray-600">{promo.freeShipping ? 'Gratis Ongkir' : `Diskon ${promo.discount}%`}</p>
-                  </div>
-                  <div className="flex space-x-1">
-                     <button onClick={() => togglePromoStatus(promo.id)} className={`p-1.5 rounded-lg ${promo.active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`} title={promo.active ? 'Nonaktifkan' : 'Aktifkan'}>{promo.active ? <CheckCircle size={16} /> : <X size={16} />}</button>
-                     <button onClick={() => handleEditPromo(promo)} className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Edit3 size={16} /></button>
-                     <button onClick={() => deletePromo(promo.id)} className="p-1.5 bg-red-50 text-red-600 rounded-lg"><Trash2 size={16} /></button>
-                  </div>
-               </div>
-            </div>
-         ))}
-      </div>
+       <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-gray-800">Voucher Promo</h2><button onClick={handleAddPromo} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><Plus size={18} className="mr-1" /> Tambah</button></div>
+      <div className="space-y-3">{promos.map(promo => (<div key={promo.id} className={`bg-white p-4 rounded-xl shadow-sm border-l-4 ${promo.active ? 'border-emerald-500' : 'border-gray-300'}`}><div className="flex justify-between items-start"><div><h3 className="font-bold text-lg text-gray-800">{promo.code}</h3><p className="text-sm text-gray-600">{promo.freeShipping ? 'Gratis Ongkir' : `Diskon ${promo.discount}%`}</p></div><div className="flex space-x-1"><button onClick={() => togglePromoStatus(promo.id)} className={`p-1.5 rounded-lg ${promo.active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`} title={promo.active ? 'Nonaktifkan' : 'Aktifkan'}>{promo.active ? <CheckCircle size={16} /> : <X size={16} />}</button><button onClick={() => handleEditPromo(promo)} className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Edit3 size={16} /></button><button onClick={() => deletePromo(promo.id)} className="p-1.5 bg-red-50 text-red-600 rounded-lg"><Trash2 size={16} /></button></div></div></div>))}</div>
     </div>
   );
 
   const renderAdminStreams = () => (
      <div className="p-4">
-       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Live Streaming</h2>
-        <button onClick={handleAddStream} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><Plus size={18} className="mr-1" /> Tambah</button>
-      </div>
-      <div className="space-y-4">
-         {streams.map(stream => (
-            <div key={stream.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
-               <div className="aspect-video bg-gray-100 relative">
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-400"><Video size={48} /></div>
-                  <iframe src={`https://www.youtube.com/embed/${stream.url.split('/').pop()}`} className="absolute inset-0 w-full h-full opacity-50" title="preview"></iframe>
-               </div>
-               <div className="p-4 flex justify-between items-center">
-                  <div>
-                     <h3 className="font-bold text-gray-800">{stream.title}</h3>
-                     <p className="text-sm text-gray-500">{stream.viewers} Penonton • {stream.url}</p>
-                  </div>
-                  <div className="flex space-x-2">
-                     <button onClick={() => handleEditStream(stream)} className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Edit3 size={18} /></button>
-                     <button onClick={() => deleteStream(stream.id)} className="p-2 bg-red-50 text-red-600 rounded-lg"><Trash2 size={18} /></button>
-                  </div>
-               </div>
-            </div>
-         ))}
-      </div>
+       <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-gray-800">Live Streaming</h2><button onClick={handleAddStream} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium"><Plus size={18} className="mr-1" /> Tambah</button></div>
+      <div className="space-y-4">{streams.map(stream => (<div key={stream.id} className="bg-white rounded-xl shadow-sm overflow-hidden"><div className="aspect-video bg-gray-100 relative"><div className="absolute inset-0 flex items-center justify-center text-gray-400"><Video size={48} /></div><iframe src={`https://www.youtube.com/embed/${stream.url.split('/').pop()}`} className="absolute inset-0 w-full h-full opacity-50" title="preview"></iframe></div><div className="p-4 flex justify-between items-center"><div><h3 className="font-bold text-gray-800">{stream.title}</h3><p className="text-sm text-gray-500">{stream.viewers} Penonton • {stream.url}</p></div><div className="flex space-x-2"><button onClick={() => handleEditStream(stream)} className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Edit3 size={18} /></button><button onClick={() => deleteStream(stream.id)} className="p-2 bg-red-50 text-red-600 rounded-lg"><Trash2 size={18} /></button></div></div></div>))}</div>
      </div>
   );
 
   const renderAdminPromoIcons = () => (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Kelola Menu Ikon</h2>
-        <button onClick={handleAddPromoIcon} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg">
-          <Plus size={18} className="mr-1" /> Tambah
-        </button>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-         {promoIcons.map(item => {
-             const IconComponent = iconMap[item.icon] || Smile;
-             return (
-                 <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between">
-                    <div className="flex items-center">
-                        <div className={`w-10 h-10 ${item.color} rounded-lg flex items-center justify-center mr-3`}>
-                            <IconComponent size={20} className={item.textColor} />
-                        </div>
-                        <div>
-                            <p className="font-bold text-gray-800 text-sm">{item.name}</p>
-                            <p className="text-xs text-gray-500">{item.icon}</p>
-                        </div>
-                    </div>
-                    <div className="flex space-x-1">
-                        <button onClick={() => handleEditPromoIcon(item)} className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Edit3 size={14} /></button>
-                        <button onClick={() => deletePromoIcon(item.id)} className="p-1.5 bg-red-50 text-red-600 rounded-lg"><Trash2 size={14} /></button>
-                    </div>
-                 </div>
-             )
-         })}
-      </div>
+      <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-gray-800">Kelola Menu Ikon</h2><button onClick={handleAddPromoIcon} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg"><Plus size={18} className="mr-1" /> Tambah</button></div>
+      <div className="grid grid-cols-2 gap-4">{promoIcons.map(item => { const IconComponent = iconMap[item.icon] || Smile; return (<div key={item.id} className="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between"><div className="flex items-center"><div className={`w-10 h-10 ${item.color} rounded-lg flex items-center justify-center mr-3`}><IconComponent size={20} className={item.textColor} /></div><div><p className="font-bold text-gray-800 text-sm">{item.name}</p><p className="text-xs text-gray-500">{item.icon}</p></div></div><div className="flex space-x-1"><button onClick={() => handleEditPromoIcon(item)} className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Edit3 size={14} /></button><button onClick={() => deletePromoIcon(item.id)} className="p-1.5 bg-red-50 text-red-600 rounded-lg"><Trash2 size={14} /></button></div></div>) })}</div>
     </div>
   );
 
@@ -1034,7 +827,7 @@ const App: React.FC = () => {
         </nav>
       )}
       
-      {/* Modals */}
+      {/* Modals and Checkouts */}
       <AnimatePresence>{showShare && (<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setShowShare(false)}><motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="bg-white w-full rounded-t-2xl p-4" onClick={(e) => e.stopPropagation()}><div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800">Bagikan Kriuké</h3><button onClick={() => setShowShare(false)}><X size={20} /></button></div><div className="grid grid-cols-2 gap-3 mb-4"><button onClick={shareToWhatsApp} className="flex flex-col items-center p-3 bg-emerald-50 rounded-lg"><div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center mb-2"><MessageCircle size={20} className="text-white" /></div><span className="text-sm font-medium">WhatsApp</span></button><button onClick={copyLink} className="flex flex-col items-center p-3 bg-emerald-50 rounded-lg"><div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center mb-2"><Copy size={20} className="text-white" /></div><span className="text-sm font-medium">Salin Link</span></button></div>{isCopied && (<div className="flex items-center bg-emerald-50 text-emerald-700 p-3 rounded-lg"><CheckCircle size={16} className="mr-2" /><span>Link Kriuké disalin!</span></div>)}</motion.div></motion.div>)}</AnimatePresence>
       <AnimatePresence>{showCheckout && (selectedProduct || checkoutMode === 'cart') && (<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setShowCheckout(false)}><motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="bg-white w-full rounded-t-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}><div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10"><h2 className="text-xl font-bold text-gray-800">{checkoutMode === 'cart' ? 'Checkout Keranjang' : 'Checkout Produk'}</h2><button onClick={() => setShowCheckout(false)} className="p-2 rounded-full hover:bg-gray-100"><X size={24} /></button></div>
       <form onSubmit={(e) => { e.preventDefault(); if (!checkoutData.name || !checkoutData.whatsapp) { alert('❌ Mohon lengkapi Nama dan No WhatsApp'); return; } setIsSubmitting(true); setTimeout(() => { const productDetails = checkoutMode === 'cart' ? cart.map(item => `- ${item.name} (${item.quantity}x) @ Rp${item.price.toLocaleString()}`).join('\n') : `Produk: ${selectedProduct?.name}\nHarga: Rp${selectedProduct?.price.toLocaleString()}\nJumlah: ${checkoutData.quantity}`; const message = `*PESANAN DARI KRIUKÉ APP (${checkoutMode === 'cart' ? 'Keranjang' : 'Beli Langsung'})*\n\n${productDetails}\n\nSubtotal: Rp${currentSubtotal.toLocaleString()}\nKode Promo: ${checkoutData.promoCode || '-'}\nDiskon: Rp${promoDiscount.toLocaleString()}\nOngkir: ${isFreeShipping ? 'GRATIS' : `Rp${shippingCost.toLocaleString()}`}\nTotal: *Rp${finalTotal.toLocaleString()}*\n\nData Pelanggan:\nNama: ${checkoutData.name}\nAlamat: ${checkoutData.address}\nWA: ${checkoutData.whatsapp}\nCatatan: ${checkoutData.notes || '-'}\n\nTerima kasih telah memilih _Kriuké_! 🍌\nTim kami akan segera menghubungi Anda.`.trim(); window.open(`https://wa.me/6283854488111?text=${encodeURIComponent(message)}`, '_blank'); setIsSubmitting(false); setShowCheckout(false); if (checkoutMode === 'cart') { setCart([]); setCurrentView('home'); setActiveTab('home'); } else if (selectedProduct) { addToCart(selectedProduct, checkoutData.quantity); } }, 1000); }} className="p-4 space-y-4">
@@ -1043,7 +836,65 @@ const App: React.FC = () => {
           </div>
           <div className="space-y-3"><div><label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label><input type="text" value={checkoutData.name} onChange={(e) => setCheckoutData({...checkoutData, name: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="Contoh: Budi Santoso" required/></div><div><label className="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label><textarea value={checkoutData.address} onChange={(e) => setCheckoutData({...checkoutData, address: e.target.value})} rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="Jl. Mangga No. 12, Bandung"/></div><div><label className="block text-sm font-medium text-gray-700 mb-1">No WhatsApp</label><div className="relative"><span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">+62</span><input type="tel" value={checkoutData.whatsapp} onChange={(e) => setCheckoutData({...checkoutData, whatsapp: e.target.value})} className="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="81234567890" required/></div></div>{checkoutMode === 'single' && (<div><label className="block text-sm font-medium text-gray-700 mb-1">Jumlah</label><div className="flex items-center border border-gray-300 rounded-lg"><button type="button" onClick={() => setCheckoutData({...checkoutData, quantity: Math.max(1, checkoutData.quantity - 1)})} className="w-10 h-10 flex items-center justify-center text-emerald-600">-</button><input type="number" value={checkoutData.quantity} onChange={(e) => setCheckoutData({...checkoutData, quantity: parseInt(e.target.value) || 1})} min="1" className="flex-1 text-center py-2 border-x border-gray-300 focus:outline-none"/><button type="button" onClick={() => setCheckoutData({...checkoutData, quantity: checkoutData.quantity + 1})} className="w-10 h-10 flex items-center justify-center text-emerald-600">+</button></div></div>)}<div><label className="block text-sm font-medium text-gray-700 mb-1">Kode Promo</label><div className="flex"><input type="text" value={checkoutData.promoCode} onChange={(e) => setCheckoutData({...checkoutData, promoCode: e.target.value})} className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-emerald-500" placeholder="Contoh: KRIUKE10"/><button type="button" onClick={() => { const code = checkoutData.promoCode.toUpperCase(); if (validPromoCodes[code]) { alert(`✅ Kode ${code} valid!`); } else if (code) { alert('❌ Kode promo tidak valid'); } }} className="bg-emerald-600 text-white px-4 rounded-r-lg flex items-center"><Check size={16} /></button></div><p className="text-xs text-emerald-600 mt-1">Aktif: KRIUKE10, GRATISONGKIR, DTFHARMONI</p></div><div><label className="block text-sm font-medium text-gray-700 mb-1">Catatan</label><input type="text" value={checkoutData.notes} onChange={(e) => setCheckoutData({...checkoutData, notes: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="Warna kaos, varian rasa, dll"/></div></div><div className="bg-gray-50 p-4 rounded-lg"><h3 className="font-bold text-gray-800 mb-2">Rincian Harga</h3><div className="space-y-2 text-sm"><div className="flex justify-between"><span>Subtotal</span><span className="font-medium">Rp{currentSubtotal.toLocaleString()}</span></div>{promoDiscount > 0 && (<div className="flex justify-between text-emerald-600"><span>Diskon Promo</span><span>-Rp{promoDiscount.toLocaleString()}</span></div>)}<div className="flex justify-between"><span>Ongkos Kirim</span><span>{isFreeShipping ? 'GRATIS' : `Rp${shippingCost.toLocaleString()}`}</span></div><div className="flex justify-between pt-2 border-t font-bold text-lg"><span>Total Bayar</span><span className="text-emerald-600">Rp{finalTotal.toLocaleString()}</span></div></div></div><button type="submit" disabled={isSubmitting} className={`w-full py-3 px-4 rounded-xl font-bold text-white ${isSubmitting ? 'bg-emerald-400' : 'bg-emerald-600'} flex items-center justify-center`}>{isSubmitting ? (<><svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Mengirim...</>) : ('Kirim Pesanan ke WhatsApp')}</button><p className="text-xs text-gray-500 text-center">📲 Tim Kriuké akan balas maks. 1 jam.</p></form></motion.div></motion.div>)}</AnimatePresence>
       <AnimatePresence>{showContactModal && (<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowContactModal(false)}><motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white w-full max-w-sm rounded-xl p-6" onClick={(e) => e.stopPropagation()}><div className="flex justify-between items-center mb-4"><h3 className="font-bold text-lg text-gray-800">Tanya Admin via WhatsApp</h3><button onClick={() => setShowContactModal(false)} className="p-1 hover:bg-gray-100 rounded-full"><X size={20} /></button></div><form onSubmit={handleContactSubmit} className="space-y-4"><div><label className="block text-sm font-medium text-gray-700 mb-1">Nama Anda</label><input type="text" value={contactData.name} onChange={(e) => setContactData({...contactData, name: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="Nama Anda"/></div><div><label className="block text-sm font-medium text-gray-700 mb-1">Pesan / Pertanyaan</label><textarea value={contactData.message} onChange={(e) => setContactData({...contactData, message: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500" rows={3} placeholder="Tanya stok, detail produk, dll..." required /></div><button type="submit" className="w-full bg-green-600 text-white py-2.5 rounded-lg font-bold hover:bg-green-700 flex items-center justify-center"><MessageCircle size={18} className="mr-2" />Kirim ke WhatsApp</button></form></motion.div></motion.div>)}</AnimatePresence>
-      <AnimatePresence>{showCommentModal && (<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setShowCommentModal(false)}><motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="bg-white w-full rounded-t-2xl p-4" onClick={(e) => e.stopPropagation()}><div className="flex justify-between items-center mb-4"><h3 className="font-bold text-lg text-gray-800">Komentar</h3><button onClick={() => setShowCommentModal(false)} className="p-1 hover:bg-gray-100 rounded-full"><X size={20} /></button></div><form onSubmit={handlePostComment} className="flex items-end space-x-2"><textarea value={commentText} onChange={(e) => setCommentText(e.target.value)} className="flex-1 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 resize-none" placeholder="Tulis komentar..." rows={3} autoFocus /><button type="submit" disabled={!commentText.trim()} className={`p-3 rounded-full ${commentText.trim() ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-400'}`}><Send size={20} /></button></form></motion.div></motion.div>)}</AnimatePresence>
+      
+      {/* UPDATED COMMENT MODAL: Full Height, Scrollable List, Fixed Bottom Input */}
+      <AnimatePresence>
+        {showCommentModal && activePost && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setShowCommentModal(false)}>
+                <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="bg-white w-full rounded-t-2xl h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                    {/* Modal Header */}
+                    <div className="p-4 border-b flex justify-between items-center bg-white rounded-t-2xl">
+                        <h3 className="font-bold text-lg text-gray-800">Komentar ({activePost.commentsList?.length || activePost.comments})</h3>
+                        <button onClick={() => setShowCommentModal(false)} className="p-1 hover:bg-gray-100 rounded-full"><X size={20} /></button>
+                    </div>
+                    
+                    {/* Comments List (Scrollable) */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                        {(!activePost.commentsList || activePost.commentsList.length === 0) ? (
+                            <div className="text-center py-8 text-gray-400 flex flex-col items-center h-full justify-center">
+                                <MessageCircle size={48} className="mb-2 opacity-20" />
+                                <p>Belum ada komentar.</p>
+                                <p className="text-xs">Jadilah yang pertama berkomentar!</p>
+                            </div>
+                        ) : (
+                            activePost.commentsList.map(comment => (
+                                <div key={comment.id} className="flex space-x-3">
+                                    <img src={comment.avatar} alt={comment.user} className="w-8 h-8 rounded-full bg-gray-200 object-cover flex-shrink-0" />
+                                    <div className="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[85%]">
+                                        <div className="flex items-baseline space-x-2 mb-1">
+                                            <span className="font-bold text-xs text-gray-900">{comment.user}</span>
+                                            <span className="text-[10px] text-gray-500">{comment.time}</span>
+                                        </div>
+                                        <p className="text-sm text-gray-700 leading-snug">{comment.text}</p>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* Fixed Bottom Input */}
+                    <div className="p-3 border-t bg-white safe-area-bottom">
+                        <form onSubmit={handlePostComment} className="flex items-end space-x-2">
+                            <img src={currentUser ? `https://placehold.co/100x100/emerald/ffffff?text=${currentUser.name?.charAt(0)}` : "https://placehold.co/100x100/ccc/ffffff?text=U"} className="w-8 h-8 rounded-full bg-gray-200 mb-1 object-cover" />
+                            <div className="flex-1 bg-gray-100 rounded-xl flex items-center px-3 py-2">
+                                <input 
+                                    type="text"
+                                    value={commentText} 
+                                    onChange={(e) => setCommentText(e.target.value)} 
+                                    className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-sm max-h-20" 
+                                    placeholder={`Balas sebagai ${currentUser ? currentUser.name : 'Pengunjung'}...`} 
+                                    autoFocus 
+                                />
+                            </div>
+                            <button type="submit" disabled={!commentText.trim()} className={`p-2 rounded-full mb-0.5 ${commentText.trim() ? 'bg-emerald-600 text-white shadow-md' : 'bg-gray-100 text-gray-400'}`}>
+                                <Send size={18} className={commentText.trim() ? 'ml-0.5' : ''} />
+                            </button>
+                        </form>
+                    </div>
+                </motion.div>
+            </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* REVIEW MODAL */}
       <AnimatePresence>

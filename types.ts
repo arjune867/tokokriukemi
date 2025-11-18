@@ -65,6 +65,7 @@ export interface FeedPost {
   time: string;
   content: string;
   image?: string;
+  videoUrl?: string; // Added for YouTube/TikTok embeds
   likes: number;
   comments: number;
   isLiked: boolean;
