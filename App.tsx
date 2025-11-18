@@ -26,8 +26,8 @@ const App: React.FC = () => {
   
   // Auth state
   const [users, setUsers] = useState<UserType[]>([
-    { id: 1, username: 'arjune', password: 'masukin474', role: 'admin', name: 'Arjune' },
-    { id: 2, username: 'pelanggan', password: 'password123', role: 'customer', name: 'Pelanggan Setia' },
+    { id: 1, username: 'arjune', password: 'masukin474', role: 'admin', name: 'Arjune', email: 'admin@kriuke.com', whatsapp: '081234567890', address: 'Jl. Admin No. 1, Bandung' },
+    { id: 2, username: 'pelanggan', password: 'password123', role: 'customer', name: 'Pelanggan Setia', email: 'pelanggan@email.com', whatsapp: '089876543210', address: 'Jl. Pelanggan No. 10, Cimahi' },
   ]);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -191,6 +191,42 @@ const App: React.FC = () => {
     setTimeout(() => setShowShare(false), 500);
   };
 
+  const handleCartCheckout = () => {
+    if (!isAuthenticated || !currentUser) {
+      alert('Anda harus login untuk melanjutkan checkout.');
+      setCurrentView('login');
+      return;
+    }
+
+    const items = cart.map(item => 
+      `- ${item.name} (Rp${item.price.toLocaleString()}) x ${item.quantity} = Rp${(item.price * item.quantity).toLocaleString()}`
+    ).join('\n');
+
+    const message = `
+*PESANAN DARI KERANJANG KRIUKÉ*
+
+Halo Kriuké, saya mau pesan:
+${items}
+
+-----------------------------------
+Total Pesanan: *Rp${cartTotal.toLocaleString()}*
+
+Data Pengiriman:
+Nama: ${currentUser.name || ''}
+Alamat: ${currentUser.address || ''}
+WA: ${currentUser.whatsapp || ''}
+
+Mohon segera diproses. Terima kasih!
+    `.trim().replace(/^\s+/gm, '');
+
+    window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(message)}`, '_blank');
+    
+    alert('Pesanan Anda sedang dialihkan ke WhatsApp. Keranjang akan dikosongkan.');
+    setCart([]);
+    setCurrentView('home');
+    setActiveTab('home');
+  };
+
   const validPromoCodes = promos.reduce((acc, promo) => {
     if (promo.active) acc[promo.code] = { discount: promo.discount, freeShipping: promo.freeShipping || false };
     return acc;
@@ -237,10 +273,10 @@ const App: React.FC = () => {
         
         {/* New User Promo Banner */}
         <div className="p-4">
-          <div className="bg-red-500 text-white p-3 rounded-lg flex justify-between items-center">
+          <button onClick={() => { setCurrentView('promo'); setActiveTab('promo'); }} className="w-full bg-red-500 text-white p-3 rounded-lg flex justify-between items-center text-left">
             <h3 className="font-bold">Nikmatin diskon pengguna baru</h3>
             <ChevronRight size={20} />
-          </div>
+          </button>
         </div>
 
         {/* Flash Sale Section */}
@@ -253,9 +289,9 @@ const App: React.FC = () => {
               </div>
               <div className="flex items-center space-x-1 text-white">
                  <span className="bg-red-500 p-1 rounded-md text-sm font-mono">{h}</span>
-                 <span>:</span>
+                 <span className="text-gray-500 text-sm">:</span>
                  <span className="bg-red-500 p-1 rounded-md text-sm font-mono">{m}</span>
-                 <span>:</span>
+                 <span className="text-gray-500 text-sm">:</span>
                  <span className="bg-red-500 p-1 rounded-md text-sm font-mono">{s}</span>
               </div>
             </div>
@@ -302,7 +338,46 @@ const App: React.FC = () => {
     );
   };
   const renderDetail = () => (selectedProduct && <motion.div key="detail" initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -300, opacity: 0 }} transition={{ type: "spring", damping: 25 }} className="flex-1 overflow-y-auto pb-24 bg-white"><div className="bg-white sticky top-0 z-10 shadow-sm"><div className="flex items-center justify-between p-4"><button onClick={goBack} className="p-2 rounded-full hover:bg-gray-100"><ChevronLeft size={20} className="text-emerald-600" /></button><h1 className="font-bold text-lg text-gray-800">Detail Produk</h1><button onClick={() => setShowShare(true)} className="p-2 rounded-full hover:bg-gray-100"><Share2 size={20} className="text-emerald-600" /></button></div></div><div className="relative h-64 bg-gray-100"><img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-contain p-4"/>{selectedProduct.discount && (<span className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">-{selectedProduct.discount}%</span>)}</div><div className="p-4"><h1 className="text-xl font-bold text-gray-800">{selectedProduct.name}</h1><div className="flex items-center mt-1 text-gray-600"><Star size={16} className="text-amber-400 fill-current mr-1" /><span>{selectedProduct.rating}</span><span className="mx-2 text-gray-400">•</span><span>{selectedProduct.sold.toLocaleString()} terjual</span></div><div className="mt-3 flex items-baseline"><span className={`text-2xl font-bold text-emerald-600`}>Rp{selectedProduct.price.toLocaleString()}</span>{selectedProduct.originalPrice && (<span className="text-gray-500 line-through text-lg ml-2">Rp{selectedProduct.originalPrice.toLocaleString()}</span>)}</div><div className="mt-3 flex items-center text-sm text-gray-600"><MapPin size={16} className="mr-1 text-emerald-600" /><span>Dibuat di {selectedProduct.location}</span></div>{selectedProduct.freeShipping && (<div className="mt-3 flex items-center bg-emerald-50 p-3 rounded-lg"><Truck size={20} className="text-emerald-600 mr-2" /><div><p className="font-medium text-emerald-700">Gratis Ongkos Kirim</p><p className="text-xs text-emerald-600">Minimal belanja Rp50.000</p></div></div>)}</div><div className="px-4 py-3 bg-emerald-50 border-l-4 border-emerald-500"><p className="text-emerald-800 font-medium">🌟 Produk Kriuké: Renyah, Enak, dan Berkualitas Premium!</p></div><div className="p-4"><h3 className="font-bold text-gray-800 mb-2">Deskripsi</h3><p className="text-gray-700 mb-4">{selectedProduct.description}</p></div><div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t p-4 flex space-x-3"><button className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-medium flex items-center justify-center" onClick={() => addToCart(selectedProduct)}><ShoppingCart size={18} className="mr-2" />Keranjang</button><button className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold" onClick={() => setShowCheckout(true)}>Beli Sekarang</button></div></motion.div>);
-  const renderCart = () => (<motion.div key="cart" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 overflow-y-auto pb-24"><div className="bg-white sticky top-0 z-10 shadow-sm p-4"><div className="flex items-center"><button onClick={() => setCurrentView('home')} className="p-2 rounded-full hover:bg-gray-100 mr-2"><ChevronLeft size={20} className="text-emerald-600" /></button><h1 className="font-bold text-lg text-gray-800">Keranjang Kriuké</h1><span className="ml-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{cartCount}</span></div></div>{cart.length === 0 ? (<div className="p-4 text-center mt-12"><div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4"><Leaf size={32} className="text-emerald-600" /></div><h3 className="text-lg font-medium text-gray-800 mb-2">Keranjang Kosong</h3><p className="text-gray-600 mb-4">Yuk, isi keranjang dengan produk favoritmu!</p><button onClick={() => setCurrentView('home')} className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-medium">Belanja Sekarang</button></div>) : (<div className="p-4"><div className="space-y-4 mb-6">{cart.map(item => (<div key={item.id} className="bg-white rounded-xl p-4 shadow-sm"><div className="flex"><img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded mr-3"/><div className="flex-1"><h3 className="font-medium text-gray-800 line-clamp-2">{item.name}</h3><p className="text-emerald-600 font-bold">Rp{item.price.toLocaleString()}</p><div className="mt-2 flex items-center"><button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-6 h-6 flex items-center justify-center bg-gray-100 rounded">-</button><span className="mx-2 w-8 text-center">{item.quantity}</span><button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-6 h-6 flex items-center justify-center bg-gray-100 rounded">+</button><button onClick={() => removeFromCart(item.id)} className="ml-auto p-1 text-red-500"><Trash2 size={16} /></button></div></div></div></div>))}</div><div className="bg-white rounded-xl p-4 shadow-sm"><div className="flex justify-between mb-2"><span className="text-gray-600">Total ({cartCount} produk)</span><span className="font-bold text-lg text-emerald-600">Rp{cartTotal.toLocaleString()}</span></div><button className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold mt-4" onClick={() => { alert('✅ Pesanan Anda telah dikirim ke WhatsApp!'); setCart([]); setCurrentView('home'); }}>Checkout via WhatsApp</button></div></div>)}</motion.div>);
+  const renderCart = () => (<motion.div key="cart" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 overflow-y-auto pb-24"><div className="bg-white sticky top-0 z-10 shadow-sm p-4"><div className="flex items-center"><button onClick={() => setCurrentView('home')} className="p-2 rounded-full hover:bg-gray-100 mr-2"><ChevronLeft size={20} className="text-emerald-600" /></button><h1 className="font-bold text-lg text-gray-800">Keranjang Kriuké</h1><span className="ml-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{cartCount}</span></div></div>{cart.length === 0 ? (<div className="p-4 text-center mt-12"><div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4"><Leaf size={32} className="text-emerald-600" /></div><h3 className="text-lg font-medium text-gray-800 mb-2">Keranjang Kosong</h3><p className="text-gray-600 mb-4">Yuk, isi keranjang dengan produk favoritmu!</p><button onClick={() => setCurrentView('home')} className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-medium">Belanja Sekarang</button></div>) : (<div className="p-4"><div className="space-y-4 mb-6">{cart.map(item => (<div key={item.id} className="bg-white rounded-xl p-4 shadow-sm"><div className="flex"><img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded mr-3"/><div className="flex-1"><h3 className="font-medium text-gray-800 line-clamp-2">{item.name}</h3><p className="text-emerald-600 font-bold">Rp{item.price.toLocaleString()}</p><div className="mt-2 flex items-center"><button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-6 h-6 flex items-center justify-center bg-gray-100 rounded">-</button><span className="mx-2 w-8 text-center">{item.quantity}</span><button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-6 h-6 flex items-center justify-center bg-gray-100 rounded">+</button><button onClick={() => removeFromCart(item.id)} className="ml-auto p-1 text-red-500"><Trash2 size={16} /></button></div></div></div></div>))}</div><div className="bg-white rounded-xl p-4 shadow-sm"><div className="flex justify-between mb-2"><span className="text-gray-600">Total ({cartCount} produk)</span><span className="font-bold text-lg text-emerald-600">Rp{cartTotal.toLocaleString()}</span></div><button className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold mt-4" onClick={handleCartCheckout}>Checkout via WhatsApp</button></div></div>)}</motion.div>);
+  const renderPromoPage = () => {
+    const promoProducts = products.filter(p => p.discount > 0);
+    return (
+        <motion.div key="promo" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col">
+            <div className="bg-white sticky top-0 z-10 shadow-sm">
+                <div className="flex items-center p-4">
+                    <button onClick={() => { setCurrentView('home'); setActiveTab('home'); }} className="p-2 rounded-full hover:bg-gray-100">
+                        <ChevronLeft size={20} className="text-emerald-600" />
+                    </button>
+                    <h1 className="font-bold text-lg text-gray-800 mx-auto">Promo & Flash Sale</h1>
+                    <div className="w-10"></div>
+                </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 pb-20">
+                {promoProducts.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3">
+                        {promoProducts.map(product => (
+                            <div key={product.id} className="bg-white rounded-lg overflow-hidden shadow-sm cursor-pointer" onClick={() => openProductDetail(product)}>
+                                <div className="relative">
+                                    <img src={product.image} alt={product.name} className="w-full h-28 object-cover"/>
+                                    <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="absolute bottom-2 right-2 bg-emerald-600/80 text-white rounded-full w-7 h-7 flex items-center justify-center z-10 hover:bg-emerald-600 transition-all transform hover:scale-110" aria-label={`Tambah ${product.name} ke keranjang`}><Plus size={16} /></button>
+                                </div>
+                                <div className="p-2">
+                                    <h3 className="text-xs font-medium text-gray-800 line-clamp-2">{product.name}</h3>
+                                    <div className="mt-1"><span className="text-emerald-600 font-bold text-sm">Rp{product.price.toLocaleString()}</span></div>
+                                    <div className="mt-1 flex items-center text-xs text-gray-500"><Star size={14} className="text-amber-400 fill-current mr-1" /><span>{product.rating}</span><span className="mx-1.5">|</span><span>{product.sold.toLocaleString()} terjual</span></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-10">
+                        <p className="text-gray-600">Saat ini belum ada promo yang tersedia.</p>
+                    </div>
+                )}
+            </div>
+        </motion.div>
+    );
+  };
   const renderAdminDashboard = () => (<div className="p-4 space-y-6"><div className="grid grid-cols-2 gap-4"><div className="bg-white p-4 rounded-xl shadow-sm"><div className="flex items-center"><div className="p-2 bg-emerald-100 rounded-lg mr-3"><Leaf size={20} className="text-emerald-600" /></div><div><p className="text-sm text-gray-600">Penjualan Hari Ini</p><p className="text-xl font-bold">Rp2.45jt</p></div></div></div><div className="bg-white p-4 rounded-xl shadow-sm"><div className="flex items-center"><div className="p-2 bg-emerald-100 rounded-lg mr-3"><Package size={20} className="text-emerald-600" /></div><div><p className="text-sm text-gray-600">Pesanan</p><p className="text-xl font-bold">87</p></div></div></div><div className="bg-white p-4 rounded-xl shadow-sm"><div className="flex items-center"><div className="p-2 bg-emerald-100 rounded-lg mr-3"><ShoppingCart size={20} className="text-emerald-600" /></div><div><p className="text-sm text-gray-600">Produk Terjual</p><p className="text-xl font-bold">1.240</p></div></div></div><div className="bg-white p-4 rounded-xl shadow-sm"><div className="flex items-center"><div className="p-2 bg-emerald-100 rounded-lg mr-3"><Shirt size={20} className="text-emerald-600" /></div><div><p className="text-sm text-gray-600">Kaos DTF</p><p className="text-xl font-bold">215</p></div></div></div></div><div className="bg-white p-4 rounded-xl shadow-sm"><h3 className="font-bold text-gray-800 mb-4">Penjualan Minggu Ini</h3><div className="h-64"><ResponsiveContainer width="100%" height="100%"><BarChart data={salesData}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" /><XAxis dataKey="name" stroke="#6b7280" /><YAxis stroke="#6b7280" /><Tooltip formatter={(value: number) => [`Rp${(value * 1000).toLocaleString()}`, 'Penjualan']} labelFormatter={(label) => `Hari ${label}`}/><Bar dataKey="sales" fill="#10B981" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><div className="bg-white p-4 rounded-xl shadow-sm"><h3 className="font-bold text-gray-800 mb-4">Distribusi Kategori</h3><div className="h-48"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={categoryData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={2} dataKey="value" label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}>{categoryData.map((_entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}</Pie><Tooltip formatter={(value: number) => [`${value} produk`, 'Jumlah']} /></PieChart></ResponsiveContainer></div></div><div className="bg-white p-4 rounded-xl shadow-sm"><h3 className="font-bold text-gray-800 mb-4">Produk Terlaris</h3><div className="space-y-3">{products.slice(0, 4).map(product => (<div key={product.id} className="flex justify-between items-center"><div className="flex items-center"><div className="w-8 h-8 bg-emerald-100 rounded mr-2 flex items-center justify-center"><span className="text-xs font-bold text-emerald-700">{product.name.charAt(0)}</span></div><span className="text-sm font-medium">{product.name}</span></div><span className="text-emerald-600 font-medium">{product.sold}</span></div>))}</div></div></div></div>);
   const renderAdminProducts = () => (<div className="p-4"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-gray-800">Kelola Produk</h2><button onClick={addProduct} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg"><Plus size={18} className="mr-1" /> Tambah</button></div><div className="bg-white rounded-xl shadow-sm overflow-hidden"><table className="w-full"> <thead className="bg-gray-50"><tr><th className="py-3 px-4 text-left text-sm font-medium text-gray-500">Produk</th><th className="py-3 px-4 text-left text-sm font-medium text-gray-500">Harga</th><th className="py-3 px-4 text-left text-sm font-medium text-gray-500">Kategori</th><th className="py-3 px-4 text-left text-sm font-medium text-gray-500">Aksi</th></tr></thead><tbody className="divide-y divide-gray-200">{products.map(product => (<tr key={product.id} className="hover:bg-gray-50"><td className="py-4 px-4"><div className="flex items-center"><img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded mr-3"/><span className="font-medium text-gray-800">{product.name}</span></div></td><td className="py-4 px-4"><span className={`font-bold ${getCategoryColor(product.category)}`}>Rp{product.price.toLocaleString()}</span>{product.discount && (<span className="ml-2 bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs">-{product.discount}%</span>)}</td><td className="py-4 px-4"><span className="px-2 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs">{product.category.charAt(0).toUpperCase() + product.category.slice(1)}</span></td><td className="py-4 px-4"><div className="flex space-x-2"><button onClick={() => editProduct(product.id)} className="p-1.5 bg-emerald-100 text-emerald-700 rounded-lg"><Edit3 size={14} /></button><button onClick={() => deleteProduct(product.id)} className="p-1.5 bg-red-100 text-red-700 rounded-lg"><Trash2 size={14} /></button></div></td></tr>))}</tbody></table></div></div>);
   const renderAdminCategories = () => (<div className="p-4"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-gray-800">Kategori Produk</h2><button onClick={() => alert('Fitur tambah kategori aktif di backend')} className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded-lg"><Plus size={18} className="mr-1" /> Tambah</button></div><div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">{categories.map(category => (<div key={category.id} className="bg-white rounded-xl p-4 shadow-sm text-center"><div className={`w-12 h-12 ${category.color} rounded-full flex items-center justify-center mx-auto mb-2`}><span className="text-lg">{category.icon}</span></div><h3 className="font-medium text-gray-800">{category.name}</h3></div>))}</div></div>);
@@ -312,7 +387,7 @@ const App: React.FC = () => {
       if (currentView === 'akun' && isAuthenticated && currentUser) {
           return (<div className="flex-1 overflow-y-auto pb-20 p-4"><div className="flex items-center mb-6"><User className="text-emerald-600 mr-2" size={28} /><h1 className="text-2xl font-bold text-emerald-700">Akun Saya</h1></div><div className="bg-white p-6 rounded-xl space-y-4"><div className="text-center"><h2 className="text-xl font-bold text-gray-800 mb-2">Selamat Datang, {currentUser.name || currentUser.username}!</h2><p className="text-gray-600">Anda login sebagai {currentUser.role === 'admin' ? 'Administrator' : 'Pelanggan'}.</p></div>{currentUser.role === 'admin' && (<button onClick={() => { setActiveTab('admin'); setCurrentView('admin'); }} className="w-full flex items-center justify-center bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium"><Shield size={18} className="mr-2" />Akses Panel Admin</button>)}<button onClick={handleLogout} className="w-full flex items-center justify-center bg-red-500 text-white px-6 py-3 rounded-lg font-medium"><LogOut size={18} className="mr-2" />Logout</button></div></div>)
       }
-      const pages: Record<string, {title: string; icon: React.ElementType}> = { feed: { title: "Feed", icon: Newspaper }, promo: { title: "Promo", icon: Tag }};
+      const pages: Record<string, {title: string; icon: React.ElementType}> = { feed: { title: "Feed", icon: Newspaper }};
       const { title, icon: Icon } = pages[currentView] || { title: "Halaman", icon: Home };
       return (<div className="flex-1 overflow-y-auto pb-20 p-4"><div className="flex items-center mb-6"><Icon className="text-emerald-600 mr-2" size={28} /><h1 className="text-2xl font-bold text-emerald-700">{title}</h1></div><div className="bg-white p-6 rounded-xl text-center"><div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4"><Icon className="text-emerald-600" size={32} /></div><p className="text-gray-600">Halaman ini sedang dalam pengembangan.</p><button onClick={() => setCurrentView('home')} className="mt-4 bg-emerald-600 text-white px-6 py-2 rounded-lg font-medium">Kembali ke Toko</button></div></div>);
   };
@@ -336,10 +411,11 @@ const App: React.FC = () => {
          currentView === 'cart' ? renderCart() :
          currentView === 'login' ? renderLogin() :
          currentView === 'register' ? renderRegister() :
+         currentView === 'promo' ? renderPromoPage() :
          currentView === 'admin' ? (isAuthenticated && currentUser?.role === 'admin' ? (<motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex overflow-hidden"><div className="w-16 bg-emerald-700 text-white flex flex-col items-center py-4 space-y-6"><button onClick={() => setAdminView('dashboard')} className={`p-3 rounded-lg ${adminView === 'dashboard' ? 'bg-emerald-600' : ''}`} title="Dashboard"><BarChart3 size={20} /></button><button onClick={() => setAdminView('products')} className={`p-3 rounded-lg ${adminView === 'products' ? 'bg-emerald-600' : ''}`} title="Produk"><Grid size={20} /></button><button onClick={() => setAdminView('categories')} className={`p-3 rounded-lg ${adminView === 'categories' ? 'bg-emerald-600' : ''}`} title="Kategori"><Package size={20} /></button><button onClick={() => setAdminView('promos')} className={`p-3 rounded-lg ${adminView === 'promos' ? 'bg-emerald-600' : ''}`} title="Promo"><Percent size={20} /></button><button onClick={() => setAdminView('streams')} className={`p-3 rounded-lg ${adminView === 'streams' ? 'bg-emerald-600' : ''}`} title="Live"><Video size={20} /></button></div><div className="flex-1 overflow-y-auto">{adminView === 'dashboard' ? renderAdminDashboard() : adminView === 'products' ? renderAdminProducts() : adminView === 'categories' ? renderAdminCategories() : adminView === 'promos' ? renderAdminPromos() : renderAdminStreams()}</div></motion.div>) : renderHome()) :
          renderOtherPages()}
       </AnimatePresence>
-      {!['detail', 'login', 'register'].includes(currentView) && (
+      {!['detail', 'login', 'register', 'promo'].includes(currentView) && (
         <nav className="bg-white border-t fixed bottom-0 left-0 right-0 max-w-md mx-auto z-20">
           <div className="grid grid-cols-5">
             {[ { id: 'home', label: 'Home', icon: Home }, { id: 'feed', label: 'Feed', icon: Newspaper }, { id: 'promo', label: 'Promo', icon: Tag }, { id: 'cart', label: 'Keranjang', icon: ShoppingCart, custom: true }, isAuthenticated ? { id: 'akun', label: 'Akun', icon: User } : { id: 'login', label: 'Login', icon: LogIn } ].map(item => {
