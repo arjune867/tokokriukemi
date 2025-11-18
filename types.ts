@@ -8,6 +8,9 @@ export interface User {
   email?: string;
   whatsapp?: string;
   address?: string;
+  points?: number;      // Added for loyalty points
+  isVerified?: boolean; // Added for verification status
+  isBlocked?: boolean;  // Added for blocking functionality
 }
 
 export interface Review {
@@ -102,5 +105,15 @@ export interface PromoIconItem {
   textColor: string; // Tailwind text class
 }
 
-export type View = 'home' | 'detail' | 'cart' | 'admin' | 'feed' | 'promo' | 'akun' | 'login' | 'register' | 'live';
-export type AdminView = 'dashboard' | 'products' | 'categories' | 'promos' | 'streams' | 'promo-icons';
+export interface Transaction {
+  id: string;
+  date: string;
+  items: CartItem[]; // Reusing CartItem structure for bought items
+  total: number;
+  status: 'pending' | 'processed' | 'shipped' | 'completed' | 'cancelled';
+  statusLabel: string;
+  paymentMethod: string;
+}
+
+export type View = 'home' | 'detail' | 'cart' | 'admin' | 'feed' | 'promo' | 'akun' | 'login' | 'register' | 'live' | 'transaksi';
+export type AdminView = 'dashboard' | 'products' | 'categories' | 'promos' | 'streams' | 'promo-icons' | 'settings';
